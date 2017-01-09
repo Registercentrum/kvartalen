@@ -1,4 +1,4 @@
-Repository.Local.Methods.initialize({
+Repository.Local.Methods.initialize({    
     initSampleSizes: function() {
         var db = Repository.Local.database,
             pc = Repository.Local.current.period,
