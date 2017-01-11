@@ -162,31 +162,6 @@ Repository.Local.Methods.initialize({
             Year: 2,
             Gender: 3
         };
-        //TODO: replace this with one generic model (in common methods).
-        // typeof IndicatorOverTimeModel === 'undefined' && Ext.define('IndicatorOverTimeModel', {
-        //     extend: 'Ext.data.Model',
-        //     fields: [{
-        //         name: 'quarter',
-        //         type: 'string',
-        //         useNull: true
-        //     }, {
-        //         name: 'administration',
-        //         type: 'string',
-        //         useNull: true
-        //     }, {
-        //         name: 'deviation',
-        //         type: 'float',
-        //         useNull: true
-        //     }, {
-        //         name: 'measure',
-        //         type: 'float',
-        //         useNull: true
-        //     }, {
-        //         name: 'size',
-        //         type: 'float',
-        //         useNull: true
-        //     }]
-        // });
 
         typeof IndicatorOverTimeModel === 'undefined' && Ext.define('IndicatorOverTimeModel', {
             extend: 'Ext.data.Model',
@@ -400,104 +375,8 @@ Repository.Local.Methods.initialize({
         Ext.create('Ext.data.Store', {
             storeId: 'IndicatorOverTimeStore',
             model: 'IndicatorOverTimeModel',
-            groupField: 'quarter',
             data: widget.getManagementValues()
-        });
-
-        Ext.define('Ext.chart.series.AutoGroupedBar', {
-            extend: 'Ext.chart.series.Bar',
-            type: 'autogroupedbar',
-            alias: 'series.autogroupedbar',
-            gField: null,
-            constructor: function (config) {
-                this.callParent(arguments);
-                // apply any additional config supplied for this extender
-                Ext.apply(this, config);
-                var me = this,
-                    store = me.chart.getStore(),
-                    // get groups from store (make sure store is grouped)
-                    groups = store.isGrouped() ? store.getGroups() : [],
-
-                    // collect all unique values for the new grouping field
-                    groupers = store.collect(me.gField),
-                    // blank array to hold our new field definitions (based on groupers collected from store)
-                    fields = [];
-                debugger;
-                // first off, we want the xField to be a part of our new Model definition, so add it first
-                fields.push({
-                    name: me.xField
-                });
-                // now loop over the groupers (unique values from our store which match the gField)
-                for (var i in groupers) {
-                    // for each value, add a field definition...this will give us the flat, in-record column for each group 
-                    fields.push({
-                        name: groupers[i],
-                        type: 'float'
-                    });
-                }
-                // let's create a new Model definition, based on what we determined above
-                Ext.define('GroupedResult', {
-                    extend: 'Ext.data.Model',
-                    fields: fields
-                });
-                // now create a new store using our new model
-                var newStore = Ext.create('Ext.data.Store', {
-                    model: 'GroupedResult'
-                });
-                // now for the money-maker; loop over the current groups in our store
-
-                for (var i in groups.map) {
-
-                    // get a sample model from the group
-                    var curModel = groups.map[i];
-                    // create a new instance of our new Model
-                    var newModel = Ext.create('GroupedResult');
-                    // set the property in the model that corresponds to our xField config
-                    newModel.set(me.xField, curModel.getGroupKey());
-                    // now loop over each of the records within the old store's current group
-                    for (var x = 0; x < groups.map[i].items.length; x++) {
-                        // get the record
-                        var dataModel = groups.map[i].items[x];
-                        // get the property and value that correspond to gField AND yField
-                        var dataProperty = dataModel.get(me.gField);
-                        var dataValue = dataModel.get(me.yField);
-                        // update the value for the property in the Model instance
-                        newModel.set(dataProperty, dataValue);
-                        // add the Model instance to the new Store
-                        newStore.add(newModel);
-                    }
-                }
-                // now we have to fix the axes so they work
-                // for each axes...
-                Ext.Array.each(me.chart.axes, function (item, index, len) {
-                    // if array of fields
-                    if (typeof item.config.fields == 'object') {
-                        // loop over the axis' fields
-                        for (var i in item.config.fields) {
-                            // if the field matches the yField config, remove the old field and replace with the grouping fields
-                            if (item.config.fields[i] == me.yField) {
-                                Ext.Array.erase(item.config.fields, i, 1);
-                                Ext.Array.insert(item.config.fields, i, groupers);
-                                break;
-                            }
-                        }
-                    }
-                    // if simple string
-                    else {
-                        // if field matches the yField config, overwrite with grouping fields (string or array)
-                        if (item.config.fields == me.yField) {
-                            item.config.fields = groupers;
-                        }
-                    }
-                });
-                // set series fields and yField config to the new groupers
-                me.fields, me.yField = groupers;
-                // update chart's store config, and re-bind the store
-                me.chart.store = newStore;
-                me.chart.bindStore(me.chart.store, true);
-                // done!
-            }
-        });
+        });       
 
         widget._chart = Ext.widget('chart', {
             renderTo: 'ManagementIndicatorContainer',
@@ -517,17 +396,6 @@ Repository.Local.Methods.initialize({
                 left: 20
             },
             store: Ext.data.StoreManager.lookup('IndicatorOverTimeStore'),
-            listeners: {
-                //Makes sure the rectangles are redrawn if the inner height has been changed in the chart surface
-                redraw: function (chart) {
-                    try {
-                        // if (!chart._lastInnerRect || chart.innerRect[3] !== chart._lastInnerRect[3]) {
-                        //     _m.drawLimitRectangles(chart);
-                        // }
-                        // chart._lastInnerRect = chart.innerRect;
-                    } catch (e) {}
-                }
-            },
             axes: [{
                 type: 'numeric',
                 position: 'left',
@@ -547,7 +415,6 @@ Repository.Local.Methods.initialize({
                 fields: 'quarter',
                 title: 'Kvartaler'
             }],
-            legend: true,
             series: [{
                 type: 'bar',
                 axis: 'left',
@@ -578,7 +445,7 @@ Repository.Local.Methods.initialize({
                             Ext.util.Format.number(s.get('adnDeviation'), '0.0%')));
                     }
                 },
-                renderer: _m.kvartalenChartRenderer,
+                renderer: _m.kvartalenChartRenderer(['vgrDeviation','admDeviation']),
                 xField: 'quarter',
                 yField: ['administration','vgr']
             }]

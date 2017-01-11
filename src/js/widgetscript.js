@@ -338,10 +338,10 @@ window.Stratum.SID = {
     mapAdministrationCodeToName: function (aAdministrationCode) {
         if (!aAdministrationCode)
             return '';
-        if(aAdministrationCode.toString().length === 5){
+        if (aAdministrationCode.toString().length === 5) {
             return this.mapManagementCodeToName(aAdministrationCode);
         }
-        if(aAdministrationCode.toString().length === 6) {
+        if (aAdministrationCode.toString().length === 6) {
             return this.mapHospitalCodeToName(aAdministrationCode);
         }
     },
@@ -483,51 +483,52 @@ window.Stratum.SID = {
         surface.renderFrame();
 
     },
-    kvartalenChartRenderer: function (sprite, config, rendererData, index) {
-        var me = Repository.Local.Methods,
-            store = rendererData.store,
-            storeItems = store.getData().items,
-            last = storeItems.length - 1,
-            record = storeItems[index],
-            surface = sprite.getParent(),
-            errorSprites = surface.myErrorSprites,
-            scale = sprite.attr.scalingY,
-            deviation, errorSprite, i;
-        if (!record) {
-            // Hides all sprites if there are no records... And adds a text sprite
-            if (errorSprites && !surface.mySpritesHidden) {
-                Ext.each(errorSprites, function (es) {
-                    es.hide();
+    kvartalenChartRenderer: function (fieldNames) {
+        return function (sprite, config, rendererData, index) {
+            var me = Repository.Local.Methods,
+                store = rendererData.store,
+                storeItems = store.getData().items,
+                last = storeItems.length - 1,
+                record = storeItems[index],
+                surface = sprite.getParent(),
+                errorSprites = surface.myErrorSprites,
+                scale = sprite.attr.scalingY,
+                deviation, errorSprite, i;
+            if (!record) {
+                // Hides all sprites if there are no records... And adds a text sprite
+                if (errorSprites && !surface.mySpritesHidden) {
+                    Ext.each(errorSprites, function (es) {
+                        es.hide();
+                    });
+                    surface.mySpritesHidden = true;
+                }
+                return;
+            }
+            surface.mySpritesHidden = false;
+            deviation = record.get('deviation') * scale;
+
+            if (!errorSprites) {
+                errorSprites = surface.myErrorSprites = [];
+            }
+            errorSprite = errorSprites[index];
+            if (!errorSprite) {
+                errorSprite = errorSprites[index] = surface.add({
+                    type: 'path'
                 });
-                surface.mySpritesHidden = true;
+            } else {
+                errorSprite.show();
             }
-            return;
-        }
-        surface.mySpritesHidden = false;
-
-        deviation = record.get('deviation') * scale;
-
-        if (!errorSprites) {
-            errorSprites = surface.myErrorSprites = [];
-        }
-        errorSprite = errorSprites[index];
-        if (!errorSprite) {
-            errorSprite = errorSprites[index] = surface.add({
-                type: 'path'
-            });
-        } else {
-            errorSprite.show();
-        }
-        errorSprite.setAttributes(me.getErrorPathAttributes(sprite, config, deviation));
-        if (index === last) {
-            for (i = last + 1; i < errorSprites.length; i++) {
-                errorSprites[i].hide();
+            errorSprite.setAttributes(me.getErrorPathAttributes(sprite, config, deviation));
+            if (index === last) {
+                for (i = last + 1; i < errorSprites.length; i++) {
+                    errorSprites[i].hide();
+                }
             }
-        }
-        //Adjust width
-        return {
-            width: config.width / 1.25,
-            x: config.x + (config.width - config.width / 1.25) / 2
+            //Adjust width
+            return {
+                width: config.width / 1.25,
+                x: config.x + (config.width - config.width / 1.25) / 2
+            };
         };
     },
     navigateToPage: function (pageId) {
