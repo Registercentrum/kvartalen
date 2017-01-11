@@ -1,7 +1,9 @@
-window.Stratum = { SID: {}};
+window.Stratum = {
+    SID: {}
+};
 window.Stratum.SID = {
     relURL: '',
-    initialize: function(widget) {
+    initialize: function (widget) {
         var aCallback = widget.init;
         if (Ext.isFunction(widget.preInit)) {
             widget.preInit();
@@ -25,17 +27,17 @@ window.Stratum.SID = {
             };
         }
         Repository.Local.database = {};
-        me.ajaxCall('/api/registrations/form/1077', function(e, r) { // Get Target regitrations.
+        me.ajaxCall('/api/registrations/form/1077', function (e, r) { // Get Target regitrations.
             if (!r.result.success) {
                 aCallback.call(widget, me, r.result.message);
             } else {
                 Repository.Local.database.Targets = r.result.data;
-                me.ajaxCall('/api/registrations/form/1076', function(e, r) { // Get Indicator registrations.
+                me.ajaxCall('/api/registrations/form/1076', function (e, r) { // Get Indicator registrations.
                     if (!r.result.success) {
                         aCallback.call(widget, me, r.result.message);
                     } else {
                         Repository.Local.database.Indicators = r.result.data;
-                        me.initDomainMap(function(e, r) {
+                        me.initDomainMap(function (e, r) {
                             if (r.result && r.result.success) {
                                 Ext.create('Ext.data.Store', {
                                     storeId: 'KVIndicatorStore',
@@ -48,7 +50,7 @@ window.Stratum.SID = {
                                         mapping: 'ValueName'
                                     }, {
                                         name: 'title',
-                                        convert: function(v, record) {
+                                        convert: function (v, record) {
                                             return me.mapTitleCodeToName(record.get('valueCode'));
                                         }
                                     }, 'Sequence'],
@@ -69,14 +71,14 @@ window.Stratum.SID = {
                                     }],
                                     filters: [
 
-                                        function(item) {
+                                        function (item) {
                                             return Ext.Array.contains(me.getPossibleIndicators({
                                                 indicatorValues: true
                                             }), item.get('valueCode'));
                                         }
                                     ],
                                     autoLoad: false
-                                }).load(function(records, operation, success) {
+                                }).load(function (records, operation, success) {
                                     if (success) {
                                         aCallback.call(widget, me);
                                     } else {
@@ -92,7 +94,7 @@ window.Stratum.SID = {
             }
         });
     },
-    getMostRecentPeriod: function(date) {
+    getMostRecentPeriod: function (date) {
         var d = date || new Date(),
             periods = [2341, 3412, 4123, 1234];
         d = Ext.Date.add(d, Ext.Date.DAY, -135);
@@ -101,16 +103,16 @@ window.Stratum.SID = {
             year: d.getFullYear()
         };
     },
-    getIndicatorTargets: function(anIndicatorCode) {
+    getIndicatorTargets: function (anIndicatorCode) {
         var db = Repository.Local.database,
             me = this.getIndicatorTargets,
             tc;
 
         if (!me.cache || !me.cache[anIndicatorCode]) {
-            tc = Ext.Array.filter(db.Targets, function(cr) {
+            tc = Ext.Array.filter(db.Targets, function (cr) {
                 return cr.Indicator === anIndicatorCode;
             });
-            tc.sort(function(a, b) {
+            tc.sort(function (a, b) {
                 return a.YearOfQuarter < b.YearOfQuarter || (a.YearOfQuarter === b.YearOfQuarter && a.Quarter < b.Quarter);
             });
             me.cache = me.cache || {};
@@ -121,7 +123,7 @@ window.Stratum.SID = {
         }
         return me.cache[anIndicatorCode];
     },
-    getPossibleIndicators: function() {
+    getPossibleIndicators: function () {
         var db = Repository.Local.database,
             me = this.getPossibleIndicators,
             mc = {},
@@ -129,7 +131,7 @@ window.Stratum.SID = {
             inds = [];
 
         if (!me.cache) {
-            Ext.Array.forEach(db.Indicators, function(rc) {
+            Ext.Array.forEach(db.Indicators, function (rc) {
                 if (!mc[rc.Indicator]) {
                     mc[rc.Indicator] = {
                         valueCode: rc.Indicator,
@@ -146,7 +148,7 @@ window.Stratum.SID = {
             });
             me.cache = {
                 mc: Ext.Object.getValues(mc),
-                yc: Ext.Array.sort(Ext.Object.getValues(yc), function(a, b) {
+                yc: Ext.Array.sort(Ext.Object.getValues(yc), function (a, b) {
                     return b.valueCode - a.valueCode;
                 }),
                 inds: inds
@@ -157,7 +159,7 @@ window.Stratum.SID = {
         }
         return arguments && arguments[0] && arguments[0].years ? me.cache.yc : me.cache.mc;
     },
-    getIndicatorSequence: function(indicatorCode) {
+    getIndicatorSequence: function (indicatorCode) {
         var store = Ext.StoreManager.lookup('KVIndicatorStore'),
             record;
         if (!store) {
@@ -166,17 +168,43 @@ window.Stratum.SID = {
         record = store.findRecord('valueCode', indicatorCode);
         return record && record.get('Sequence');
     },
-    getPossibleYears: function() {
+    getPossibleYears: function () {
         return this.getPossibleIndicators({
             years: true
         });
     },
-    getPeriodCodeNamePairs: function() {
+    getAdministrationCodeNamePairs: function () {
+        var ret = [];
+        var _callee = this.getAdministrationCodeNamePairs;
+        if (!_callee.cache) {
+            if (Repository.Local.domainMaps.hospital) {
+                Ext.Object.each(Repository.Local.domainMaps.hospital, function (key, val) {
+                    ret.push({
+                        type: 'hospital',
+                        valueName: val,
+                        valueCode: parseInt(key, 10)
+                    });
+                });
+            }
+            if (Repository.Local.domainMaps.management) {
+                Ext.Object.each(Repository.Local.domainMaps.management, function (key, val) {
+                    ret.push({
+                        type: 'management',
+                        valueName: val,
+                        valueCode: parseInt(key, 10)
+                    });
+                });
+            }
+            _callee.cache = ret;
+        }
+        return _callee.cache;
+    },
+    getPeriodCodeNamePairs: function () {
         var ret = [],
             me = this.getPeriodCodeNamePairs;
         if (!me.cache) {
             if (Repository.Local.domainMaps) {
-                Ext.Object.each(Repository.Local.domainMaps.periods, function(key, value) {
+                Ext.Object.each(Repository.Local.domainMaps.periods, function (key, value) {
                     ret.push({
                         valueName: value,
                         valueCode: parseInt(key, 10)
@@ -187,19 +215,19 @@ window.Stratum.SID = {
         }
         return me.cache;
     },
-    maximumOfMeasure: function(aStore) {
+    maximumOfMeasure: function (aStore) {
         // Calculate maximum of all current measures, deviation included (to support auto scaling of y-axis in charts).
         var max = 0;
-        aStore.each(function(o) {
+        aStore.each(function (o) {
             max = Math.max(max, Math.ceil((o.data.measure + (o.data.measure / 100 * o.data.deviation)) / 10) * 10);
         });
         return max;
     },
-    domainForStore: function(aMapFunction) {
+    domainForStore: function (aMapFunction) {
         var o = aMapFunction();
         var l = [];
 
-        Ext.Object.each(o, function(k, v) {
+        Ext.Object.each(o, function (k, v) {
             l.push({
                 valueCode: k,
                 valueName: v
@@ -208,7 +236,7 @@ window.Stratum.SID = {
         return l;
 
     },
-    initDomainMap: function(callback) {
+    initDomainMap: function (callback) {
         var me = this,
             domainMaps = {
                 management: {},
@@ -242,10 +270,10 @@ window.Stratum.SID = {
             };
         var ids = Ext.Array.pluck(Ext.Object.getValues(domainMapIds), 'id'),
             data;
-        me.ajaxCall('/api/metadata/domains/map/' + ids.join(), function(e, r) {
+        me.ajaxCall('/api/metadata/domains/map/' + ids.join(), function (e, r) {
             if (r.result && r.result.success) {
                 data = r.result.data;
-                Ext.Object.each(data[domainMapIds.Administration.name], function(key, value) {
+                Ext.Object.each(data[domainMapIds.Administration.name], function (key, value) {
                     //Separate hospitals from management
                     if (key.length === 5) {
                         domainMaps.management[key] = value;
@@ -263,7 +291,7 @@ window.Stratum.SID = {
             Ext.isFunction(callback) && callback(e, r);
         });
     },
-    ajaxCall: function(url, callbackFn) {
+    ajaxCall: function (url, callbackFn) {
         var me = this;
         Ext.Ajax.request({
             url: (me.relURL || '') + url,
@@ -271,7 +299,7 @@ window.Stratum.SID = {
             params: me.APIKey ? {
                 APIKey: me.APIKey
             } : {},
-            callback: function(o, success, resp) {
+            callback: function (o, success, resp) {
                 var data;
                 if (success) {
                     data = resp && resp.responseText && Ext.decode(resp.responseText);
@@ -283,7 +311,7 @@ window.Stratum.SID = {
             }
         });
     },
-    mapManagementCodeToShortname: function(anAdministrationCode) {
+    mapManagementCodeToShortname: function (anAdministrationCode) {
         //TODO: Consider storing this as Domain
         var map = {
             '52012': 'Alingsås', //ALS
@@ -299,37 +327,47 @@ window.Stratum.SID = {
         };
         return anAdministrationCode ? map[anAdministrationCode] : map;
     },
-    mapManagementCodeToName: function(aManagementCode) {
+    mapManagementCodeToName: function (aManagementCode) {
         var map = Repository.Local.domainMaps.management;
         return aManagementCode ? map[aManagementCode] : map;
     },
-    mapHospitalCodeToName: function(anAdministrationCode) {
+    mapHospitalCodeToName: function (anAdministrationCode) {
         var map = Repository.Local.domainMaps.hospital;
         return anAdministrationCode ? map[anAdministrationCode] : map;
     },
-    mapRegisterCodeToName: function(aRegisterCode) {
+    mapAdministrationCodeToName: function (aAdministrationCode) {
+        if (!aAdministrationCode)
+            return '';
+        if(aAdministrationCode.toString().length === 5){
+            return this.mapManagementCodeToName(aAdministrationCode);
+        }
+        if(aAdministrationCode.toString().length === 6) {
+            return this.mapHospitalCodeToName(aAdministrationCode);
+        }
+    },
+    mapRegisterCodeToName: function (aRegisterCode) {
         var map = Repository.Local.domainMaps.registers;
         return Ext.isNumeric(aRegisterCode) ? map[aRegisterCode.toString().substr(0, 2)] : map;
     },
-    mapTitleCodeToName: function(aIndicatorCode) {
+    mapTitleCodeToName: function (aIndicatorCode) {
         var map = Repository.Local.domainMaps.titles;
         return Ext.isNumeric(aIndicatorCode) ? map[aIndicatorCode] : map;
     },
-    mapIndicatorCodeToName: function(anIndicatorCode) {
+    mapIndicatorCodeToName: function (anIndicatorCode) {
         var map = Repository.Local.domainMaps.indicators;
         return anIndicatorCode ? map[anIndicatorCode.toString()] : map;
     },
-    mapGenderCodeToName: function(aGenderCode) {
+    mapGenderCodeToName: function (aGenderCode) {
         var map = Repository.Local.domainMaps.gender;
         return aGenderCode ? map[aGenderCode.toString()] : map;
     },
-    toRegisterCode: function(aIndicatorCode) {
+    toRegisterCode: function (aIndicatorCode) {
         return +(aIndicatorCode.toString().substr(0, 2));
     },
-    toManagementCode: function(aHospitalCode) {
+    toManagementCode: function (aHospitalCode) {
         return aHospitalCode.toString().substr(0, 5);
     },
-    getErrorPathAttributes: function(barSprite, barConfig, deviation, lineConf) {
+    getErrorPathAttributes: function (barSprite, barConfig, deviation, lineConf) {
         var conf = Ext.isObject(lineConf) ? lineConf : {},
             errorWidth = (conf.errorWidth || 20) / 2,
             lineWidth = (conf.lineWidth || 2) / 2,
@@ -354,7 +392,8 @@ window.Stratum.SID = {
     },
     // Draws three rectangles onto the chart surface describing the current limits.
     // Currently only working for 0-100 scales...
-    drawLimitRectangles: function(chart) {
+    // TODO: extract the textSprite addition for use without limit rects.
+    drawLimitRectangles: function (chart) {
         var store = chart.getStore(),
             series = chart.getSeries() && chart.getSeries()[0],
             surface = series && series.getSurface(),
@@ -444,7 +483,7 @@ window.Stratum.SID = {
         surface.renderFrame();
 
     },
-    kvartalenChartRenderer: function(sprite, config, rendererData, index) {
+    kvartalenChartRenderer: function (sprite, config, rendererData, index) {
         var me = Repository.Local.Methods,
             store = rendererData.store,
             storeItems = store.getData().items,
@@ -457,7 +496,7 @@ window.Stratum.SID = {
         if (!record) {
             // Hides all sprites if there are no records... And adds a text sprite
             if (errorSprites && !surface.mySpritesHidden) {
-                Ext.each(errorSprites, function(es) {
+                Ext.each(errorSprites, function (es) {
                     es.hide();
                 });
                 surface.mySpritesHidden = true;
@@ -491,7 +530,7 @@ window.Stratum.SID = {
             x: config.x + (config.width - config.width / 1.25) / 2
         };
     },
-    navigateToPage: function(pageId) {
+    navigateToPage: function (pageId) {
         if (typeof location === 'undefined' || !location) {
             return;
         }
