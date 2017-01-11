@@ -144,8 +144,8 @@ Repository.Local.Methods.initialize({
             store = Ext.data.StoreManager.lookup('IndicatorOverTimeStore');
 
         store && store.loadData(this.getManagementValues());
-        
-        this._chart.getSeries()[0] && this._chart.series[0].setTitle(Repository.Local.Methods.mapAdministrationCodeToName(Repository.Local.current.administration));
+
+        // this._chart.getSeries()[0] && this._chart.series[0].setTitle(Repository.Local.Methods.mapAdministrationCodeToName(Repository.Local.current.administration));
         combos = scope.ownerCt.query('combo');
         Ext.Array.each(combos, function (cc) {
             !cc.isIndicatorCombo && cc.getStore().reload(); // Ensure that combo with itemTpl is reexecuted when combo list is opened.
@@ -166,39 +166,40 @@ Repository.Local.Methods.initialize({
         typeof IndicatorOverTimeModel === 'undefined' && Ext.define('IndicatorOverTimeModel', {
             extend: 'Ext.data.Model',
             fields: [{
-                name: 'quarter',
-                type: 'string',
-                useNull: true
-            }, {
-                name: 'admTitle',
-                type: 'string',
-                useNull: true
-            }, {
-                name: 'admDeviation',
-                type: 'float',
-                useNull: true
-            }, {
-                name: 'administration',
-                type: 'float',
-                useNull: true
-            }, {
-                name: 'admSize',
-                type: 'float',
-                useNull: true
-            },
-            {
-                name: 'vgrDeviation',
-                type: 'float',
-                useNull: true
-            }, {
-                name: 'vgr',
-                type: 'float',
-                useNull: true
-            }, {
-                name: 'vgrSize',
-                type: 'float',
-                useNull: true
-            }]
+                    name: 'quarter',
+                    type: 'string',
+                    useNull: true
+                }, {
+                    name: 'admTitle',
+                    type: 'string',
+                    useNull: true
+                }, {
+                    name: 'admDeviation',
+                    type: 'float',
+                    useNull: true
+                }, {
+                    name: 'administration',
+                    type: 'float',
+                    useNull: true
+                }, {
+                    name: 'admSize',
+                    type: 'float',
+                    useNull: true
+                },
+                {
+                    name: 'vgrDeviation',
+                    type: 'float',
+                    useNull: true
+                }, {
+                    name: 'vgr',
+                    type: 'float',
+                    useNull: true
+                }, {
+                    name: 'vgrSize',
+                    type: 'float',
+                    useNull: true
+                }
+            ]
         });
 
         var sampleSizeConfiguration = {
@@ -376,7 +377,7 @@ Repository.Local.Methods.initialize({
             storeId: 'IndicatorOverTimeStore',
             model: 'IndicatorOverTimeModel',
             data: widget.getManagementValues()
-        });       
+        });
 
         widget._chart = Ext.widget('chart', {
             renderTo: 'ManagementIndicatorContainer',
@@ -415,6 +416,9 @@ Repository.Local.Methods.initialize({
                 fields: 'quarter',
                 title: 'Kvartaler'
             }],
+            // legend: {
+            //     docked: 'right'
+            // },
             series: [{
                 type: 'bar',
                 axis: 'left',
@@ -434,7 +438,7 @@ Repository.Local.Methods.initialize({
                 tips: {
                     trackMouse: true,
                     dismissDelay: 0,
-                    renderer: function(s) {
+                    renderer: function (s) {                        
                         if (!s) {
                             return;
                         }
@@ -442,12 +446,18 @@ Repository.Local.Methods.initialize({
                             s.get('admTitle'),
                             s.get('size'),
                             Ext.util.Format.number(s.get('administration'), '0.0%'),
-                            Ext.util.Format.number(s.get('adnDeviation'), '0.0%')));
+                            Ext.util.Format.number(s.get('admDeviation'), '0.0%')));
                     }
                 },
-                renderer: _m.kvartalenChartRenderer(['vgrDeviation','admDeviation']),
+                renderer: _m.kvartalenChartRenderer({
+                    field: 'administration',
+                    deviationKeys: {
+                        vgr: 'vgrDeviation',
+                        administration: 'admDeviation'
+                    }
+                }),
                 xField: 'quarter',
-                yField: ['administration','vgr']
+                yField: ['administration', 'vgr']
             }]
         });
     }

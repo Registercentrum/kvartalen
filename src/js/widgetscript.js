@@ -370,7 +370,7 @@ window.Stratum.SID = {
     getErrorPathAttributes: function (barSprite, barConfig, deviation, lineConf) {
         var conf = Ext.isObject(lineConf) ? lineConf : {},
             errorWidth = (conf.errorWidth || 20) / 2,
-            lineWidth = (conf.lineWidth || 2) / 2,
+            lineWidth = (conf.lineWidth || 10) / 2,
             barX = barConfig.x + barConfig.width / 2,
             barY = barConfig.y,
             maxHeight = barSprite.attr.innerHeight;
@@ -483,7 +483,7 @@ window.Stratum.SID = {
         surface.renderFrame();
 
     },
-    kvartalenChartRenderer: function (fieldNames) {
+    kvartalenChartRenderer: function (groupedConfig) {
         return function (sprite, config, rendererData, index) {
             var me = Repository.Local.Methods,
                 store = rendererData.store,
@@ -505,7 +505,12 @@ window.Stratum.SID = {
                 return;
             }
             surface.mySpritesHidden = false;
-            deviation = record.get('deviation') * scale;
+            if (groupedConfig) {                
+                var type = sprite.getField(groupedConfig.field);
+                deviation = record.get(groupedConfig.deviationKeys[type]) * scale;
+            } else {
+                deviation = record.get('deviation') * scale;
+            }
 
             if (!errorSprites) {
                 errorSprites = surface.myErrorSprites = [];
@@ -518,7 +523,9 @@ window.Stratum.SID = {
             } else {
                 errorSprite.show();
             }
-            errorSprite.setAttributes(me.getErrorPathAttributes(sprite, config, deviation));
+            var attr = me.getErrorPathAttributes(sprite, config, deviation);
+            console.log('Attr: ', attr);
+            errorSprite.setAttributes(attr);
             if (index === last) {
                 for (i = last + 1; i < errorSprites.length; i++) {
                     errorSprites[i].hide();
