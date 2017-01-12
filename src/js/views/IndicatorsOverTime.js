@@ -69,7 +69,7 @@ Repository.Local.Methods.initialize({
             gc = parseInt(Repository.Local.current.gender, 10),
             ic = Repository.Local.current.indicator,
             ac = Repository.Local.current.administration,
-            yc = Repository.Local.current.yearOfPeriod;
+            yc = (new Date()).getFullYear();
 
         var minimumYear = yc - 3;
         var returnHash = {};
@@ -99,19 +99,6 @@ Repository.Local.Methods.initialize({
             }
         }
 
-        function createDataPointtmp(rc) {
-            var quarter = rc.YearOfPeriod + '-' + rc.Period,
-                title = Repository.Local.Methods.mapAdministrationCodeToName(rc.Administration);
-
-            return {
-                quarter: quarter,
-                administration: title,
-                measure: rc.Measure,
-                deviation: rc.Deviation,
-                size: rc.Size
-            };
-        }
-
         function filterFunc(rc) {
             return rc.Indicator === ic && (rc.Administration == ac || rc.Administration == 55555) && rc.YearOfPeriod >= minimumYear && rc.Gender === gc && rc.Period < 5;
         }
@@ -129,7 +116,7 @@ Repository.Local.Methods.initialize({
             .each(Ext.Array.filter(db.Indicators, filterFunc), createDataPoint);
 
         var vc = Ext.Object.getValues(returnHash).sort(sortByQuarter);
-        this.initSampleSizes();
+        // this.initSampleSizes();
         console.table(vc);
         return vc;
     },
@@ -141,15 +128,17 @@ Repository.Local.Methods.initialize({
     },
     dropdownRefresh: function (scope, _m) {
         var combos,
-            store = Ext.data.StoreManager.lookup('IndicatorOverTimeStore');
+            store = Ext.data.StoreManager.lookup('IndicatorOverTimeStore'),
+            chart = this._chart;
 
         store && store.loadData(this.getManagementValues());
 
-        // this._chart.getSeries()[0] && this._chart.series[0].setTitle(Repository.Local.Methods.mapAdministrationCodeToName(Repository.Local.current.administration));
-        combos = scope.ownerCt.query('combo');
-        Ext.Array.each(combos, function (cc) {
-            !cc.isIndicatorCombo && cc.getStore().reload(); // Ensure that combo with itemTpl is reexecuted when combo list is opened.
-        });
+        chart.getSeries()[0] && this._chart.series[0].setTitle(Repository.Local.Methods.mapAdministrationCodeToName(Repository.Local.current.administration));
+        // debugger;
+        // combos = scope.ownerCt.query('combo');
+        // Ext.Array.each(combos, function (cc) {
+        //     !cc.isIndicatorCombo && cc.getStore().reload(); // Ensure that combo with itemTpl is reexecuted when combo list is opened.
+        // });
     },
     preInit: function () {
         Ext.fly('ManagementIndicatorContainer').mask('Hämtar data ...');
@@ -168,36 +157,36 @@ Repository.Local.Methods.initialize({
             fields: [{
                     name: 'quarter',
                     type: 'string',
-                    useNull: true
+                    allowNull: true
                 }, {
                     name: 'admTitle',
                     type: 'string',
-                    useNull: true
+                    allowNull: true
                 }, {
                     name: 'admDeviation',
-                    type: 'float',
-                    useNull: true
+                    type: 'number',
+                    allowNull: true
                 }, {
                     name: 'administration',
                     type: 'float',
-                    useNull: true
+                    allowNull: true
                 }, {
                     name: 'admSize',
-                    type: 'float',
-                    useNull: true
+                    type: 'number',
+                    allowNull: true
                 },
                 {
                     name: 'vgrDeviation',
-                    type: 'float',
-                    useNull: true
+                    type: 'number',
+                    allowNull: true
                 }, {
                     name: 'vgr',
                     type: 'float',
-                    useNull: true
+                    allowNull: true
                 }, {
                     name: 'vgrSize',
-                    type: 'float',
-                    useNull: true
+                    type: 'number',
+                    allowNull: true
                 }
             ]
         });
@@ -214,164 +203,7 @@ Repository.Local.Methods.initialize({
         };
         Ext.fly('ManagementIndicatorContainer').unmask();
 
-        Ext.create('Ext.panel.Panel', {
-            renderTo: 'ManagementIndicatorContainer',
-            width: '100%',
-            margin: '10px 0 20px 0',
-            border: false,
-            layout: {
-                type: 'vbox'
-            },
-            defaults: {
-                cls: 'WidgetFormItem',
-                editable: false
-            },
-            items: [{
-                xtype: 'combobox',
-                checkChangeEvents: Ext.isIE10p ? ['change', 'propertychange', 'keyup'] : ['change', 'input', 'textInput', 'keyup', 'dragdrop'],
-                width: '100%',
-                flex: 1,
-                isIndicatorCombo: true,
-                margin: '0 1px 0 0',
-                emptyText: 'Välj indikator ...',
-                store: 'KVIndicatorStore',
-                queryMode: 'local',
-                displayField: 'valueName',
-                valueField: 'valueCode',
-                listConfig: {
-                    titleCodeToName: function (value) {
-                        return _m.mapTitleCodeToName(value);
-                    },
-                    getInnerTpl: function () {
-                        return '<i>{title}</i><br/>{valueName}';
-                    }
-                },
-                value: Repository.Local.current.indicator,
-                listeners: {
-                    select: function (aCombo, aSelection) {
-                        Repository.Local.current.indicator = aSelection.get('valueCode');
-                        widget.dropdownRefresh(aCombo, _m);
-                    }
-                }
-            }, {
-                xtype: 'container',
-                margin: '8px 0 0 0',
-                defaults: {
-                    cls: 'WidgetFormItem',
-                    editable: false
-                },
-                layout: {
-                    type: 'hbox'
-                },
-                width: '100%',
-                items: [{
-                    xtype: 'combobox',
-                    checkChangeEvents: Ext.isIE10p ? ['change', 'propertychange', 'keyup'] : ['change', 'input', 'textInput', 'keyup', 'dragdrop'],
-                    flex: 1,
-                    padding: '0 5px 0 0',
-                    emptyText: 'Välj Förvaltning/sjukhus...',
-                    store: Ext.create('Ext.data.Store', {
-                        fields: ['valueCode', 'valueName', 'type'],
-                        data: _m.getAdministrationCodeNamePairs(),
-                        listeners: {
-                            datachanged: function () {
-                                widget.sizeRefresh(this, Repository.Local.SORTTYPE.Hospital);
-                            }
-                        }
 
-                    }),
-                    queryMode: 'local',
-                    displayField: 'valueName',
-                    valueField: 'valueCode',
-                    listConfig: {
-                        cls: 'grouped-list'
-                    },
-                    value: Repository.Local.current.administration,
-                    listeners: {
-                        select: function (aCombo, aSelection) {
-                            Repository.Local.current.administration = aSelection.get('valueCode');
-                            widget.dropdownRefresh(aCombo, _m);
-                        }
-                    },
-                    tpl: Ext.create('Ext.XTemplate',
-                        '{[this.currentKey = null]}' +
-                        '<tpl for=".">',
-                        '<tpl if="this.shouldShowHeader(type)">' +
-                        '<div class="group-header">{[this.showHeader(values.type)]}</div>' +
-                        '</tpl>' +
-                        '<div class="x-boundlist-item">{valueName}</div>',
-                        '</tpl>', {
-                            shouldShowHeader: function (key) {
-                                return this.currentKey != key;
-                            },
-                            showHeader: function (key) {
-                                this.currentKey = key;
-                                switch (key) {
-                                    case 'hospital':
-                                        return 'Sjukhus';
-                                    case 'management':
-                                        return 'Förvaltning';
-                                    default:
-                                        return 'Okänd';
-                                }
-                            }
-                        })
-                }, {
-                    xtype: 'combobox',
-                    checkChangeEvents: Ext.isIE10p ? ['change', 'propertychange', 'keyup'] : ['change', 'input', 'textInput', 'keyup', 'dragdrop'],
-                    width: 110,
-                    padding: '0 5px 0 0',
-                    labelWidth: 20,
-                    fieldLabel: 'för',
-                    emptyText: 'Välj årtal ...',
-                    store: Ext.create('Ext.data.Store', {
-                        fields: ['valueCode', 'valueName'],
-                        data: _m.getPossibleYears(),
-                        listeners: {
-                            datachanged: function () {
-                                widget.sizeRefresh(this, Repository.Local.SORTTYPE.Year);
-                            }
-                        }
-                    }),
-                    queryMode: 'local',
-                    displayField: 'valueName',
-                    valueField: 'valueCode',
-                    listConfig: sampleSizeConfiguration,
-                    value: Repository.Local.current.yearOfPeriod,
-                    listeners: {
-                        select: function (aCombo, aSelection) {
-                            Repository.Local.current.yearOfPeriod = aSelection.get('valueCode');
-                            widget.dropdownRefresh(aCombo, _m);
-                        }
-                    }
-                }, {
-                    xtype: 'combobox',
-                    checkChangeEvents: Ext.isIE10p ? ['change', 'propertychange', 'keyup'] : ['change', 'input', 'textInput', 'keyup', 'dragdrop'],
-                    width: 170,
-                    emptyText: 'Välj kön ...',
-                    store: Ext.create('Ext.data.Store', { //TODO: use domainForStore in local script to generate store.
-                        fields: ['valueCode', 'valueName'],
-                        data: _m.domainForStore(_m.mapGenderCodeToName),
-                        listeners: {
-                            datachanged: function () {
-                                widget.sizeRefresh(this, Repository.Local.SORTTYPE.Gender);
-                            }
-                        }
-                    }),
-                    queryMode: 'local',
-                    displayField: 'valueName',
-                    valueField: 'valueCode',
-                    listConfig: sampleSizeConfiguration,
-                    value: Repository.Local.current.gender,
-                    listeners: {
-                        select: function (aCombo, aSelection) {
-                            Repository.Local.current.gender = aSelection.get('valueCode');
-                            widget.dropdownRefresh(aCombo, _m);
-                        }
-                    }
-                }]
-            }]
-        });
 
         Ext.create('Ext.data.Store', {
             storeId: 'IndicatorOverTimeStore',
@@ -379,12 +211,11 @@ Repository.Local.Methods.initialize({
             data: widget.getManagementValues()
         });
 
-        widget._chart = Ext.widget('chart', {
-            renderTo: 'ManagementIndicatorContainer',
+        widget._chart = new Ext.chart.CartesianChart({
             width: '100%',
             height: 400,
             border: true,
-            layout: 'fit',
+            // layout: 'fit',
             plugins: {
                 ptype: 'chartitemevents'
             },
@@ -403,7 +234,7 @@ Repository.Local.Methods.initialize({
                 minimum: 0,
                 maximum: 100,
                 grid: true,
-                fields: 'measure',
+                fields: ['administration', 'vgr'],
                 renderer: function (v) {
                     return v + '%';
                 }
@@ -411,14 +242,15 @@ Repository.Local.Methods.initialize({
                 type: 'category',
                 position: 'bottom',
                 label: {
-                    fontSize: 11
+                    fontSize: 10
                 },
+                labelInSpan: true,
                 fields: 'quarter',
                 title: 'Kvartaler'
             }],
-            // legend: {
-            //     docked: 'right'
-            // },
+            legend: {
+                docked: 'bottom'
+            },
             series: [{
                 type: 'bar',
                 axis: 'left',
@@ -435,30 +267,192 @@ Repository.Local.Methods.initialize({
                     fillStyle: ['065598', '#e0921d'],
                     border: false
                 },
-                tips: {
+                tooltip: {
                     trackMouse: true,
                     dismissDelay: 0,
-                    renderer: function (s) {                        
+                    renderer: function (s, item) {
                         if (!s) {
                             return;
                         }
-                        this.update(Ext.String.format(s.get('admSize') ? '{0}<br/>{1} observationer.<br/>{2}. Konfidensintervall &plusmn;{3}.' : '{0}<br/>{1} observationer.',
-                            s.get('admTitle'),
-                            s.get('size'),
-                            Ext.util.Format.number(s.get('administration'), '0.0%'),
-                            Ext.util.Format.number(s.get('admDeviation'), '0.0%')));
+                        var fieldMap = {
+                            administration: {
+                                size: 'admSize',
+                                deviation: 'admDeviation'
+                            },
+                            vgr: {
+                                size: 'vgrSize',
+                                deviation: 'vgrDeviation'
+                            }
+                        };
+                        var sizeField = fieldMap[item.field].size;
+                        var deviationField = fieldMap[item.field].deviation;
+
+                        this.update(Ext.String.format(s.get(sizeField) ? '{0}<br/>{1} observationer.<br/>{2}. Konfidensintervall &plusmn;{3}.' : '{0}<br/>{1} observationer.',
+                            item.field === 'vgr' ? 'VGR' : s.get('admTitle'),
+                            s.get(sizeField),
+                            Ext.util.Format.number(s.get(item.field), '0.0%'),
+                            Ext.util.Format.number(s.get(deviationField), '0.0%')));
                     }
                 },
                 renderer: _m.kvartalenChartRenderer({
-                    field: 'administration',
-                    deviationKeys: {
-                        vgr: 'vgrDeviation',
-                        administration: 'admDeviation'
-                    }
+                    vgr: 'vgrDeviation',
+                    administration: 'admDeviation'
                 }),
                 xField: 'quarter',
                 yField: ['administration', 'vgr']
             }]
+        });
+
+        var genderSelect = {
+            xtype: 'combobox',
+            checkChangeEvents: Ext.isIE10p ? ['change', 'propertychange', 'keyup'] : ['change', 'input', 'textInput', 'keyup', 'dragdrop'],
+            width: 170,
+            emptyText: 'Välj kön ...',
+            store: Ext.create('Ext.data.Store', { //TODO: use domainForStore in local script to generate store.
+                fields: ['valueCode', 'valueName'],
+                data: _m.domainForStore(_m.mapGenderCodeToName),
+                listeners: {
+                    datachanged: function () {
+                        widget.sizeRefresh(this, Repository.Local.SORTTYPE.Gender);
+                    }
+                }
+            }),
+            queryMode: 'local',
+            displayField: 'valueName',
+            valueField: 'valueCode',
+            listConfig: sampleSizeConfiguration,
+            value: Repository.Local.current.gender,
+            listeners: {
+                select: function (aCombo, aSelection) {
+                    Repository.Local.current.gender = aSelection.get('valueCode');
+                    widget.dropdownRefresh(aCombo, _m);
+                }
+            }
+        };
+
+        var administrationSelect = {
+            xtype: 'combobox',
+            checkChangeEvents: Ext.isIE10p ? ['change', 'propertychange', 'keyup'] : ['change', 'input', 'textInput', 'keyup', 'dragdrop'],
+            flex: 1,
+            padding: '0 5px 0 0',
+            emptyText: 'Välj Förvaltning/sjukhus...',
+            store: Ext.create('Ext.data.Store', {
+                fields: ['valueCode', 'valueName', 'type'],
+                data: _m.getAdministrationCodeNamePairs(),
+                listeners: {
+                    datachanged: function () {
+                        widget.sizeRefresh(this, Repository.Local.SORTTYPE.Hospital);
+                    }
+                }
+
+            }),
+            queryMode: 'local',
+            displayField: 'valueName',
+            valueField: 'valueCode',
+            listConfig: {
+                cls: 'grouped-list'
+            },
+            value: Repository.Local.current.administration,
+            listeners: {
+                select: function (aCombo, aSelection) {
+                    Repository.Local.current.administration = aSelection.get('valueCode');
+                    widget.dropdownRefresh(aCombo, _m);
+                }
+            },
+            tpl: Ext.create('Ext.XTemplate',
+                '{[this.currentKey = null]}' +
+                '<tpl for=".">',
+                '<tpl if="this.shouldShowHeader(type)">' +
+                '<div class="group-header">{[this.showHeader(values.type)]}</div>' +
+                '</tpl>' +
+                '<div class="x-boundlist-item">{valueName}</div>',
+                '</tpl>', {
+                    shouldShowHeader: function (key) {
+                        return this.currentKey != key;
+                    },
+                    showHeader: function (key) {
+                        this.currentKey = key;
+                        switch (key) {
+                            case 'hospital':
+                                return 'Sjukhus';
+                            case 'management':
+                                return 'Förvaltning';
+                            default:
+                                return 'Okänd';
+                        }
+                    }
+                })
+        };
+
+        var adm_gender_container = {
+            xtype: 'container',
+            margin: '8px 0 0 0',
+            defaults: {
+                cls: 'WidgetFormItem',
+                editable: false
+            },
+            layout: {
+                type: 'hbox'
+            },
+            width: '100%',
+            items: [administrationSelect, genderSelect]
+        };
+        var indicator_select = {
+            xtype: 'combobox',
+            checkChangeEvents: Ext.isIE10p ? ['change', 'propertychange', 'keyup'] : ['change', 'input', 'textInput', 'keyup', 'dragdrop'],
+            width: '100%',
+            flex: 1,
+            isIndicatorCombo: true,
+            margin: '0 1px 0 0',
+            emptyText: 'Välj indikator ...',
+            store: 'KVIndicatorStore',
+            queryMode: 'local',
+            displayField: 'valueName',
+            valueField: 'valueCode',
+            listConfig: {
+                titleCodeToName: function (value) {
+                    return _m.mapTitleCodeToName(value);
+                },
+                getInnerTpl: function () {
+                    return '<i>{title}</i><br/>{valueName}';
+                }
+            },
+            value: Repository.Local.current.indicator,
+            listeners: {
+                select: function (aCombo, aSelection) {
+                    Repository.Local.current.indicator = aSelection.get('valueCode');
+                    widget.dropdownRefresh(aCombo, _m);
+                }
+            }
+        };       
+
+        var chart_container = {
+            xtype: 'container',
+            margin: '8px 0 0 0',
+            defaults: {
+                cls: 'WidgetFormItem',
+                editable: false
+            },
+            layout: {
+                type: 'hbox'
+            },
+            width: '100%',
+            items: [widget._chart]
+        };
+
+        Ext.create('Ext.panel.Panel', {
+            renderTo: 'ManagementIndicatorContainer',
+            width: '100%',
+            margin: '10px 0 20px 0',
+            border: false,
+            layout: {
+                type: 'vbox'
+            },
+            defaults: {
+                cls: 'WidgetFormItem',
+                editable: false
+            },
+            items: [indicator_select, adm_gender_container, chart_container]
         });
     }
 

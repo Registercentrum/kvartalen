@@ -1,5 +1,5 @@
-Repository.Local.Methods.initialize({    
-    initSampleSizes: function() {
+Repository.Local.Methods.initialize({
+    initSampleSizes: function () {
         var db = Repository.Local.database,
             pc = Repository.Local.current.period,
             yc = Repository.Local.current.yearOfPeriod,
@@ -10,7 +10,7 @@ Repository.Local.Methods.initialize({
                 pcs: {},
                 ycs: {}
             };
-        Ext.Array.forEach(db.Indicators, function(rc) {
+        Ext.Array.forEach(db.Indicators, function (rc) {
             if (rc.Indicator === ic && rc.Administration.length === 5) {
                 if (yc === rc.YearOfPeriod && pc === rc.Period) {
                     curr.gcs[rc.Gender] = curr.gcs[rc.Gender] || {
@@ -35,7 +35,7 @@ Repository.Local.Methods.initialize({
             }
         });
     },
-    getSampleSizes: function(sorttype) {
+    getSampleSizes: function (sorttype) {
         var sortenum = Repository.Local.SORTTYPE,
             ret = {};
         if (!Repository.Local.current.sizes) {
@@ -59,7 +59,7 @@ Repository.Local.Methods.initialize({
         }
         return ret;
     },
-    getManagementValues: function() {
+    getManagementValues: function () {
         var db = Repository.Local.database,
             pc = Repository.Local.current.period,
             yc = Repository.Local.current.yearOfPeriod,
@@ -68,7 +68,7 @@ Repository.Local.Methods.initialize({
             tv = Repository.Local.Methods.getIndicatorTargets(ic),
             vc = [];
 
-        Ext.Array.forEach(db.Indicators, function(rc) {
+        Ext.Array.forEach(db.Indicators, function (rc) {
             if (rc.Indicator === ic && rc.Period === pc && rc.YearOfPeriod === yc && rc.Gender === gc && rc.Administration.length === 5) {
                 //TODO: should instatiate IndicatorModel instead ...
                 vc.push({
@@ -83,29 +83,29 @@ Repository.Local.Methods.initialize({
             }
         });
         this.initSampleSizes();
-        return vc.sort(function(a, b) {
+        return vc.sort(function (a, b) {
             return b.name.localeCompare(a.name);
         });
     },
-    sizeRefresh: function(scope, sortType) {
+    sizeRefresh: function (scope, sortType) {
         var sizes = this.getSampleSizes(sortType);
-        scope.each(function(aRecord) {
+        scope.each(function (aRecord) {
             aRecord.data.size = sizes[aRecord.data.valueCode] ? sizes[aRecord.data.valueCode].size : 0; // Add total sample size to each store record.
         });
     },
-    dropdownRefresh: function(scope, _m) {
+    dropdownRefresh: function (scope, _m) {
         var combos, store = Ext.data.StoreManager.lookup('ManagementIndicatorStore');
         store && store.loadData(this.getManagementValues());
         combos = scope.ownerCt.query('combo');
-        Ext.Array.each(combos, function(cc) {
+        Ext.Array.each(combos, function (cc) {
             !cc.isIndicatorCombo && cc.getStore().reload(); // Ensure that combo with itemTpl is reexecuted when combo list is opened.
         });
         _m.drawLimitRectangles(this._chart);
     },
-    preInit: function() {
+    preInit: function () {
         Ext.fly('ManagementIndicatorContainer').mask('Hämtar data ...');
     },
-    init: function(_m) {
+    init: function (_m) {
         var widget = this;
         Repository.Local.SORTTYPE = {
             Hospital: 0,
@@ -150,7 +150,7 @@ Repository.Local.Methods.initialize({
             cls: 'WidgetListItem',
             itemTpl: Ext.create('Ext.XTemplate',
                 '<span class="WidgetListItemInner" style="{[this.getStyle(values)]}">{valueName}</span>', {
-                    getStyle: function(aRecord) {
+                    getStyle: function (aRecord) {
                         return typeof aRecord.size === 'undefined' || aRecord.size > 0 ? '' : 'color: #999';
                     }
                 }
@@ -183,16 +183,16 @@ Repository.Local.Methods.initialize({
                 displayField: 'valueName',
                 valueField: 'valueCode',
                 listConfig: {
-                    titleCodeToName: function(value) {
+                    titleCodeToName: function (value) {
                         return _m.mapTitleCodeToName(value);
                     },
-                    getInnerTpl: function() {
+                    getInnerTpl: function () {
                         return '<i>{title}</i><br/>{valueName}';
                     }
                 },
                 value: Repository.Local.current.indicator,
                 listeners: {
-                    select: function(aCombo, aSelection) {
+                    select: function (aCombo, aSelection) {
                         Repository.Local.current.indicator = aSelection.get('valueCode');
                         widget.dropdownRefresh(aCombo, _m);
                     }
@@ -218,7 +218,7 @@ Repository.Local.Methods.initialize({
                         fields: ['valueCode', 'valueName'],
                         data: _m.getPeriodCodeNamePairs(),
                         listeners: {
-                            datachanged: function() {
+                            datachanged: function () {
                                 widget.sizeRefresh(this, Repository.Local.SORTTYPE.Period);
                             }
                         }
@@ -230,7 +230,7 @@ Repository.Local.Methods.initialize({
                     listConfig: sampleSizeConfiguration,
                     value: Repository.Local.current.period,
                     listeners: {
-                        select: function(aCombo, aSelection) {
+                        select: function (aCombo, aSelection) {
                             Repository.Local.current.period = aSelection.get('valueCode');
                             widget.dropdownRefresh(aCombo, _m);
                         }
@@ -247,7 +247,7 @@ Repository.Local.Methods.initialize({
                         fields: ['valueCode', 'valueName'],
                         data: _m.getPossibleYears(),
                         listeners: {
-                            datachanged: function() {
+                            datachanged: function () {
                                 widget.sizeRefresh(this, Repository.Local.SORTTYPE.Year);
                             }
                         }
@@ -258,7 +258,7 @@ Repository.Local.Methods.initialize({
                     listConfig: sampleSizeConfiguration,
                     value: Repository.Local.current.yearOfPeriod,
                     listeners: {
-                        select: function(aCombo, aSelection) {
+                        select: function (aCombo, aSelection) {
                             Repository.Local.current.yearOfPeriod = aSelection.get('valueCode');
                             widget.dropdownRefresh(aCombo, _m);
                         }
@@ -272,7 +272,7 @@ Repository.Local.Methods.initialize({
                         fields: ['valueCode', 'valueName'],
                         data: _m.domainForStore(_m.mapGenderCodeToName),
                         listeners: {
-                            datachanged: function() {
+                            datachanged: function () {
                                 widget.sizeRefresh(this, Repository.Local.SORTTYPE.Gender);
                             }
                         }
@@ -283,7 +283,7 @@ Repository.Local.Methods.initialize({
                     listConfig: sampleSizeConfiguration,
                     value: Repository.Local.current.gender,
                     listeners: {
-                        select: function(aCombo, aSelection) {
+                        select: function (aCombo, aSelection) {
                             Repository.Local.current.gender = aSelection.get('valueCode');
                             widget.dropdownRefresh(aCombo, _m);
                         }
@@ -325,7 +325,7 @@ Repository.Local.Methods.initialize({
             },
             listeners: {
                 //Makes sure the rectangles are redrawn if the inner height has been changed in the chart surface
-                redraw: function(chart) {
+                redraw: function (chart) {
                     try {
                         if (!chart._lastInnerRect || chart.innerRect[3] !== chart._lastInnerRect[3]) {
                             _m.drawLimitRectangles(chart);
@@ -340,7 +340,7 @@ Repository.Local.Methods.initialize({
                 minimum: 0,
                 maximum: 100,
                 grid: true,
-                renderer: function(v) {
+                renderer: function (v) {
                     return v + '%';
                 }
             }, {
@@ -366,23 +366,26 @@ Repository.Local.Methods.initialize({
                     fillStyle: '#3CB6CE',
                     border: false
                 },
-                tips: {
+                tooltip: {
                     trackMouse: true,
                     dismissDelay: 0,
-                    renderer: function(s) {
+                    renderer: function (s, item) {                       
                         if (!s) {
                             return;
-                        }
+                        }          
                         this.update(Ext.String.format(s.get('size') ? '{0}<br/>{1} observationer.<br/>{2}. Konfidensintervall &plusmn;{3}.' : '{0}<br/>{1} observationer.',
                             _m.mapManagementCodeToName(s.get('management')),
                             s.get('size'),
                             Ext.util.Format.number(s.get('measure'), '0.0%'),
                             Ext.util.Format.number(s.get('deviation'), '0.0%')));
+                            
                     }
                 },
-                renderer: _m.kvartalenChartRenderer,
+                renderer: _m.kvartalenChartRenderer({
+                    measure: 'deviation'
+                }),
                 listeners: {
-                    itemmousedown: function(series, item) {
+                    itemmousedown: function (series, item) {
                         Repository.Local.current.management = item.record.get('management');
                         _m.navigateToPage(1276);
                     }
@@ -394,4 +397,3 @@ Repository.Local.Methods.initialize({
     }
 
 });
-

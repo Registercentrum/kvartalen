@@ -368,8 +368,9 @@ window.Stratum.SID = {
         return aHospitalCode.toString().substr(0, 5);
     },
     getErrorPathAttributes: function (barSprite, barConfig, deviation, lineConf) {
+
         var conf = Ext.isObject(lineConf) ? lineConf : {},
-            errorWidth = (conf.errorWidth || 20) / 2,
+            errorWidth = (conf.errorWidth || barConfig.width * 0.5) / 2,
             lineWidth = (conf.lineWidth || 10) / 2,
             barX = barConfig.x + barConfig.width / 2,
             barY = barConfig.y,
@@ -483,7 +484,7 @@ window.Stratum.SID = {
         surface.renderFrame();
 
     },
-    kvartalenChartRenderer: function (groupedConfig) {
+    kvartalenChartRenderer: function (deviationKeys) {
         return function (sprite, config, rendererData, index) {
             var me = Repository.Local.Methods,
                 store = rendererData.store,
@@ -492,22 +493,28 @@ window.Stratum.SID = {
                 record = storeItems[index],
                 surface = sprite.getParent(),
                 errorSprites = surface.myErrorSprites,
+                spriteSlot,
                 scale = sprite.attr.scalingY,
-                deviation, errorSprite, i;
+                deviation, errorSprite, i, j,
+                field = sprite.getField(),
+                dataValue;
             if (!record) {
                 // Hides all sprites if there are no records... And adds a text sprite
                 if (errorSprites && !surface.mySpritesHidden) {
-                    Ext.each(errorSprites, function (es) {
-                        es.hide();
+                    Ext.each(errorSprites, function (esSlot) {
+                        Ext.Object.each(esSlot, function (es) {
+                            esSlot[es].hide();
+                        });
                     });
                     surface.mySpritesHidden = true;
                 }
                 return;
             }
+            dataValue = record.get(field);
             surface.mySpritesHidden = false;
-            if (groupedConfig) {                
-                var type = sprite.getField(groupedConfig.field);
-                deviation = record.get(groupedConfig.deviationKeys[type]) * scale;
+
+            if (deviationKeys) {
+                deviation = record.get(deviationKeys[field]) * scale;
             } else {
                 deviation = record.get('deviation') * scale;
             }
@@ -515,20 +522,28 @@ window.Stratum.SID = {
             if (!errorSprites) {
                 errorSprites = surface.myErrorSprites = [];
             }
-            errorSprite = errorSprites[index];
+            spriteSlot = errorSprites[index] ? errorSprites[index] : errorSprites[index] = {};
+            errorSprite = spriteSlot[field];
+
             if (!errorSprite) {
-                errorSprite = errorSprites[index] = surface.add({
+                errorSprite = spriteSlot[field] = surface.add({
                     type: 'path'
                 });
             } else {
                 errorSprite.show();
             }
+            if (dataValue === null) {
+                errorSprite.hide();
+            }
+
             var attr = me.getErrorPathAttributes(sprite, config, deviation);
-            console.log('Attr: ', attr);
             errorSprite.setAttributes(attr);
+
             if (index === last) {
-                for (i = last + 1; i < errorSprites.length; i++) {
-                    errorSprites[i].hide();
+                for (i = last + 1; i < errorSprites.length; i++) {                    
+                    for (j in errorSprites[i]) {
+                        errorSprites[i][j].hide();
+                    }
                 }
             }
             //Adjust width
