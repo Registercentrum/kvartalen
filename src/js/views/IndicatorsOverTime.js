@@ -34,17 +34,17 @@
             });
         },
         getSampleSizes: function (sorttype) {
-            var sortenum = Repository.Local.SORTTYPE;            
+            var sortenum = Repository.Local.SORTTYPE;
             if (!Repository.Local.current.sizes) {
                 return {};
             }
             switch (sorttype) {
                 case sortenum.Hospital:
                     return Repository.Local.current.sizes.vcs || {};
-             
+
                 case sortenum.Gender:
                     return Repository.Local.current.sizes.gcs || {};
-                    
+
                 default:
                     return {};
             }
@@ -57,27 +57,29 @@
                 ic = Repository.Local.current.indicator,
                 ac = Repository.Local.current.administration,
                 yc = (new Date()).getFullYear();
-
+            var unWantedPeriods = [2341, 3412, 4123];
             var minimumYear = yc - 3;
             var returnHash = {};
+            var hasQuarters = false;
+
+
 
             function createDataPoint(rc) {
                 var isVgr = (rc.Administration == 55555);
 
-                var quarter = rc.YearOfPeriod + '-' + rc.Period;
-
-                returnHash[quarter] = returnHash[quarter] || {
-                    quarter: quarter
+                var period = hasQuarters ? rc.YearOfPeriod + '-' + rc.Period : rc.YearOfPeriod.toString();
+                returnHash[period] = returnHash[period] || {
+                    period: period
                 };
 
                 if (isVgr) {
-                    Ext.Object.merge(returnHash[quarter], {
+                    Ext.Object.merge(returnHash[period], {
                         vgr: rc.Measure,
                         vgrDeviation: rc.Deviation,
                         vgrSize: rc.Size
                     });
                 } else {
-                    return Ext.Object.merge(returnHash[quarter], {
+                    Ext.Object.merge(returnHash[period], {
                         admTitle: WidjetUtils.mapAdministrationCodeToName(rc.Administration),
                         administration: rc.Measure,
                         admDeviation: rc.Deviation,
@@ -86,24 +88,44 @@
                 }
             }
 
+            function checkForQuarters(item, index) {
+                return item.Period.toString().length === 1;
+            }
+
             function filterFunc(rc) {
-                return rc.Indicator === ic && (rc.Administration == ac || rc.Administration == 55555) && rc.YearOfPeriod >= minimumYear && rc.Gender === gc && rc.Period < 5;
+                return rc.Indicator === ic &&
+                    (rc.Administration == ac || rc.Administration == 55555) &&
+                    rc.YearOfPeriod >= minimumYear &&
+                    rc.Gender === gc &&
+                    unWantedPeriods.indexOf(rc.Period) === -1;
+            }
+
+            function getMonthFromQuarter(quarter) {
+                if (typeof quarter === 'undefined' || quarter > 4)
+                    return 0;
+                else
+                    return 12 / 4 * quarter - 3;
             }
 
             function sortByQuarter(a, b) {
-                var aQuarter = a.quarter.split('-'),
-                    bQuarter = b.quarter.split('-');
-                var aDate = new Date(aQuarter[0], 12 / 4 * aQuarter[1] - 3, 1),
-                    bDate = new Date(bQuarter[0], 12 / 4 * bQuarter[1] - 3, 1);
+                var aperiod = a.period.split('-'),
+                    bperiod = b.period.split('-');
+                var aDate = new Date(aperiod[0], getMonthFromQuarter(aperiod[1]), 1),
+                    bDate = new Date(bperiod[0], getMonthFromQuarter(bperiod[1]), 1);
                 return aDate - bDate;
             }
 
+            var firstFilter = Ext.Array.filter(db.Indicators, filterFunc);
+            hasQuarters = Ext.Array.some(firstFilter, checkForQuarters);
+            var secondFilter = Ext.Array.filter(firstFilter, function (item) {
+                return hasQuarters ? item.Period.toString().length === 1 : item.Period.toString().length === 4;
+            });
             Ext.Array
-                .each(Ext.Array.filter(db.Indicators, filterFunc), createDataPoint);
+                .each(secondFilter, createDataPoint);
 
             var vc = Ext.Object.getValues(returnHash).sort(sortByQuarter);
             this.initSampleSizes();
-            // console.table(vc);
+            console.table(vc);
             return vc;
         },
         sizeRefresh: function (scope, sortType) {
@@ -119,7 +141,7 @@
 
             store && store.loadData(this.getManagementValues());
 
-            chart.getSeries()[0] && this._chart.series[0].setTitle(WidjetUtils.mapAdministrationCodeToName(Repository.Local.current.administration));
+            // chart.getSeries()[0] && chart.getSeries()[0].setTitle(WidjetUtils.mapAdministrationCodeToName(Repository.Local.current.administration));
 
             combos = scope.ownerCt.query('combo');
             Ext.Array.each(combos, function (cc) {
@@ -141,7 +163,7 @@
             Ext.define('IndicatorOverTimeModel', {
                 extend: 'Ext.data.Model',
                 fields: [{
-                        name: 'quarter',
+                        name: 'period',
                         type: 'string',
                         allowNull: true
                     }, {
@@ -197,6 +219,9 @@
                 data: widget.getManagementValues()
             });
 
+            function getSeriesTitle() {
+                return [_m.mapAdministrationCodeToName(Repository.Local.current.administration), 'vgr'];
+            }
             widget._chart = new Ext.chart.CartesianChart({
                 width: '100%',
                 height: 400,
@@ -231,11 +256,26 @@
                         fontSize: 10
                     },
                     labelInSpan: true,
-                    fields: 'quarter',
+                    fields: 'period',
                     title: 'Kvartaler'
                 }],
                 legend: {
-                    docked: 'bottom'
+                    docked: 'bottom',
+                    tpl: Ext.create('Ext.XTemplate', '<div class="', Ext.baseCSSPrefix, 'legend-container">' +
+                        '<tpl for=".">' +
+                        '<div class="', Ext.baseCSSPrefix, 'legend-item">' +
+                        '<span ' +
+                        'class="', Ext.baseCSSPrefix, 'legend-item-marker {[ values.disabled ? Ext.baseCSSPrefix + \'legend-inactive\' : \'\' ]}" ' +
+                        'style="background:{mark};">' +
+                        '</span>{[this.getTitle(values.name)]}' +
+                        '</div>' +
+                        '</tpl>' +
+                        '</div>', {
+                            getTitle: function (name) {
+                                var currentAdmintitle = _m.mapAdministrationCodeToName(Repository.Local.current.administration);
+                                return name.toLowerCase() === 'vgr' ? 'vgr' : currentAdmintitle ? currentAdmintitle : name;
+                            }
+                        })
                 },
                 series: [{
                     type: 'bar',
@@ -284,7 +324,7 @@
                         vgr: 'vgrDeviation',
                         administration: 'admDeviation'
                     }),
-                    xField: 'quarter',
+                    xField: 'period',
                     yField: ['administration', 'vgr']
                 }]
             });
