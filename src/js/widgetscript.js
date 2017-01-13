@@ -215,6 +215,16 @@ window.Stratum.SID = {
         }
         return me.cache;
     },
+    padLeft: function padLeft (str, len, char) {
+        // not done!!!
+        var currLen = str.toString().length,
+            char = char || ' ', compLen;
+        if (currLen === len)
+            return str;
+            compLen = len - currLen;
+            var toAdd = new Array(compLen).join(char);
+            return toAdd + str;
+    },
     maximumOfMeasure: function (aStore) {
         // Calculate maximum of all current measures, deviation included (to support auto scaling of y-axis in charts).
         var max = 0;
@@ -532,7 +542,7 @@ window.Stratum.SID = {
             } else {
                 errorSprite.show();
             }
-            if (dataValue === null) {
+            if (dataValue === null || dataValue === 0) {
                 errorSprite.hide();
             }
 
@@ -540,7 +550,7 @@ window.Stratum.SID = {
             errorSprite.setAttributes(attr);
 
             if (index === last) {
-                for (i = last + 1; i < errorSprites.length; i++) {                    
+                for (i = last + 1; i < errorSprites.length; i++) {
                     for (j in errorSprites[i]) {
                         errorSprites[i][j].hide();
                     }

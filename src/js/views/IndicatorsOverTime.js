@@ -124,8 +124,8 @@
                 .each(secondFilter, createDataPoint);
 
             var vc = Ext.Object.getValues(returnHash).sort(sortByQuarter);
-            this.initSampleSizes();
             console.table(vc);
+            this.initSampleSizes();
             return vc;
         },
         sizeRefresh: function (scope, sortType) {
@@ -140,9 +140,6 @@
                 chart = this._chart;
 
             store && store.loadData(this.getManagementValues());
-
-            // chart.getSeries()[0] && chart.getSeries()[0].setTitle(WidjetUtils.mapAdministrationCodeToName(Repository.Local.current.administration));
-
             combos = scope.ownerCt.query('combo');
             Ext.Array.each(combos, function (cc) {
                 !cc.isIndicatorCombo && cc.getStore().reload(); // Ensure that combo with itemTpl is reexecuted when combo list is opened.
@@ -219,14 +216,10 @@
                 data: widget.getManagementValues()
             });
 
-            function getSeriesTitle() {
-                return [_m.mapAdministrationCodeToName(Repository.Local.current.administration), 'vgr'];
-            }
             widget._chart = new Ext.chart.CartesianChart({
                 width: '100%',
                 height: 400,
                 border: true,
-                // layout: 'fit',
                 plugins: {
                     ptype: 'chartitemevents'
                 },
@@ -247,7 +240,7 @@
                     grid: true,
                     fields: ['administration', 'vgr'],
                     renderer: function (v) {
-                        return v + '%';
+                        return (v + '%'); // TODO add leftpad
                     }
                 }, {
                     type: 'category',
