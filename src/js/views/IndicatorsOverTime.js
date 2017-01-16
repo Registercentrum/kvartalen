@@ -124,7 +124,7 @@
                 .each(secondFilter, createDataPoint);
 
             var vc = Ext.Object.getValues(returnHash).sort(sortByQuarter);
-            console.table(vc);
+            // console.table(vc);
             this.initSampleSizes();
             return vc;
         },
@@ -250,7 +250,7 @@
                     },
                     labelInSpan: true,
                     fields: 'period',
-                    title: 'Kvartaler'
+                    title: 'Tidsperioder'
                 }],
                 legend: {
                     docked: 'bottom',
@@ -266,24 +266,40 @@
                         '</div>', {
                             getTitle: function (name) {
                                 var currentAdmintitle = _m.mapAdministrationCodeToName(Repository.Local.current.administration);
-                                return name.toLowerCase() === 'vgr' ? 'vgr' : currentAdmintitle ? currentAdmintitle : name;
+                                return name.toLowerCase() === 'vgr' ? 'VGR' : currentAdmintitle ? currentAdmintitle : name;
                             }
-                        })
+                        }),
+                    listeners: {
+                        itemclick: {
+                            fn: function (legend, model, el) {
+                                var seriesSurface = widget._chart.getSeries().length && widget._chart.getSeries()[0].getSurface();
+                                if (seriesSurface.myErrorSprites) {
+                                    Ext.Array.each(seriesSurface.myErrorSprites, function (spriteSlot) {
+                                        var sprite = spriteSlot[model.data.name];
+                                        if (sprite.attr.hidden) {
+                                            sprite.show();
+                                        } else {
+                                            sprite.hide();
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                    }
                 },
                 series: [{
                     type: 'bar',
                     axis: 'left',
                     stacked: false,
                     highlight: {
-                        strokeStyle: '#288CA2',
-                        fillStyle: ['065598', '#e0921d'],
+                        fill: '#276F9C',
                         stroke: 'none',
-                        opacity: 0.5,
+                        opacity: 0.8,
                         cursor: 'pointer'
                     },
                     subStyle: {
-                        strokeStyle: '#288Ca2',
-                        fillStyle: ['065598', '#e0921d'],
+                        strokeStyle: ['#236A78', '#002F4D'],
+                        fillStyle: ['#3CB6CE', '#005c95'],
                         border: false
                     },
                     tooltip: {
