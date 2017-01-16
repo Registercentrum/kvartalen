@@ -23,6 +23,7 @@ window.Stratum.SID = {
                 gender: '3',
                 management: '51001',
                 hospital: '510011',
+                administration: '510011',
                 indicator: 1002
             };
         }
@@ -498,6 +499,7 @@ window.Stratum.SID = {
                 deviation, errorSprite, i, j,
                 field = sprite.getField(),
                 dataValue;
+
             if (!record) {
                 // Hides all sprites if there are no records... And adds a text sprite
                 if (errorSprites && !surface.mySpritesHidden) {
@@ -510,34 +512,41 @@ window.Stratum.SID = {
                 }
                 return;
             }
-            dataValue = record.get(field);
+
             surface.mySpritesHidden = false;
 
-            if (deviationKeys) {
-                deviation = record.get(deviationKeys[field]) * scale;
-            } else {
-                deviation = record.get('deviation') * scale;
-            }
+            dataValue = record.get(field);
+            deviation = (deviationKeys ? record.get(deviationKeys[field]) : record.get('deviation')) * scale;
 
             if (!errorSprites) {
                 errorSprites = surface.myErrorSprites = [];
             }
-            spriteSlot = errorSprites[index] ? errorSprites[index] : errorSprites[index] = {};
-            errorSprite = spriteSlot[field];
 
-            if (!errorSprite) {
-                errorSprite = spriteSlot[field] = surface.add({
-                    type: 'path'
-                });
-            } else {
-                errorSprite.show();
-            }
+            spriteSlot = errorSprites[index] ? errorSprites[index] : errorSprites[index] = {};
+            errorSprite = spriteSlot[field] ? spriteSlot[field] : spriteSlot[field] = surface.add({
+                type: 'path',
+                parent: sprite
+            });
+            
+            // Ext.Object.each(spriteSlot, function (es) {
+            //     spriteSlot[es].hide();
+            // });
+            var attr = me.getErrorPathAttributes(sprite, config, deviation);
+            errorSprite.setAttributes(attr);
+            errorSprite.show();
+
+            // if (dataValue !== null && dataValue !== 0 && spriteSlot[field] === errorSprite) {
+            //     errorSprite.show();
+            // }
+
             if (dataValue === null || dataValue === 0) {
                 errorSprite.hide();
             }
+            // sprite.addListener('render', function() {
+            //     console.log('changing');
+            //     console.dir(this);
+            // }, errorSprite);
 
-            var attr = me.getErrorPathAttributes(sprite, config, deviation);
-            errorSprite.setAttributes(attr);
 
             if (index === last) {
                 for (i = last + 1; i < errorSprites.length; i++) {
