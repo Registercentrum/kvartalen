@@ -154,7 +154,9 @@
                 Hospital: 0,
                 Period: 1,
                 Year: 2,
-                Gender: 3
+                Gender: 3,
+                Administration: 4
+
             };
 
             Ext.define('IndicatorOverTimeModel', {
@@ -376,7 +378,7 @@
                     data: _m.getAdministrationCodeNamePairs(),
                     listeners: {
                         datachanged: function () {
-                            widget.sizeRefresh(this, Repository.Local.SORTTYPE.Hospital);
+                            widget.sizeRefresh(this, Repository.Local.SORTTYPE.Administration);
                         }
                     }
 
@@ -394,13 +396,24 @@
                         widget.dropdownRefresh(aCombo, _m);
                     }
                 },
+                displayTpl: Ext.create('Ext.XTemplate',
+                    '<tpl for=".">',
+                    '{[this.formatStr(values)]}',
+                    '</tpl>',
+                    {
+                        formatStr: function(aRecord) {                            
+                            var hyphen = '&shy;';
+                             return aRecord.valueName.replace(hyphen, '');                            
+                        }
+                    }
+                ),
                 tpl: Ext.create('Ext.XTemplate',
                     '{[this.currentKey = null]}' +
                     '<tpl for=".">',
                     '<tpl if="this.shouldShowHeader(type)">' +
                     '<div class="group-header">{[this.showHeader(values.type)]}</div>' +
                     '</tpl>' +
-                    '<div class="x-boundlist-item">{valueName}</div>',
+                    '<div class="x-boundlist-item"  style="{[this.getStyle(values)]}">{valueName}</div>',
                     '</tpl>', {
                         shouldShowHeader: function (key) {
                             return this.currentKey != key;
@@ -415,6 +428,11 @@
                                 default:
                                     return 'Okänd';
                             }
+                        },
+                        getStyle: function (aRecord) {
+                            return '';
+                            // Todo: should this be implemented?  
+                            // return typeof aRecord.size === 'undefined' || aRecord.size > 0 ? '' : 'color: #999';
                         }
                     })
             };
