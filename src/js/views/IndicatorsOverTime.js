@@ -429,8 +429,6 @@
                             }
                         },
                         getStyle: function (aRecord) {
-                            // return '';
-                            // Todo: should this be implemented?  
                             return typeof aRecord.size === 'undefined' || aRecord.size > 0 ? '' : 'color: #999';
                         }
                     })
