@@ -10,12 +10,12 @@
                 ic = Repository.Local.current.indicator,
                 curr = Repository.Local.current.sizes = {
                     gcs: {},
-                    vcs: {}
+                    acs: {},
                 };
 
             Ext.Array.forEach(db.Indicators, function (rc) {
-                if (rc.Indicator === ic && rc.Administration.length === 5) {
-                    if (yc <= rc.YearOfPeriod || rc.YearOfPeriod >= yc - 3) {
+                if (rc.Indicator === ic && (yc <= rc.YearOfPeriod || rc.YearOfPeriod >= yc - 3)) {
+                    if ((rc.Administration == ac)) {
                         curr.gcs[rc.Gender] = curr.gcs[rc.Gender] || {
                             size: 0
                         };
@@ -23,12 +23,12 @@
                     }
 
                     if (rc.Gender === gc) {
-                        if (yc <= rc.YearOfPeriod && rc.YearOfPeriod >= yc - 3) {
-                            curr.vcs[rc.Administration] = curr.vcs[rc.Administration] || {
-                                size: 0
-                            };
-                            curr.vcs[rc.Administration].size += rc.Size;
-                        }
+
+                        curr.acs[rc.Administration] = curr.acs[rc.Administration] || {
+                            size: 0
+                        };
+                        curr.acs[rc.Administration].size += rc.Size;
+
                     }
                 }
             });
@@ -39,8 +39,8 @@
                 return {};
             }
             switch (sorttype) {
-                case sortenum.Hospital:
-                    return Repository.Local.current.sizes.vcs || {};
+                case sortenum.Administration:
+                    return Repository.Local.current.sizes.acs || {};
 
                 case sortenum.Gender:
                     return Repository.Local.current.sizes.gcs || {};
@@ -399,11 +399,10 @@
                 displayTpl: Ext.create('Ext.XTemplate',
                     '<tpl for=".">',
                     '{[this.formatStr(values)]}',
-                    '</tpl>',
-                    {
-                        formatStr: function(aRecord) {                            
+                    '</tpl>', {
+                        formatStr: function (aRecord) {
                             var hyphen = '&shy;';
-                             return aRecord.valueName.replace(hyphen, '');                            
+                            return aRecord.valueName.replace(hyphen, '');
                         }
                     }
                 ),
@@ -430,9 +429,9 @@
                             }
                         },
                         getStyle: function (aRecord) {
-                            return '';
+                            // return '';
                             // Todo: should this be implemented?  
-                            // return typeof aRecord.size === 'undefined' || aRecord.size > 0 ? '' : 'color: #999';
+                            return typeof aRecord.size === 'undefined' || aRecord.size > 0 ? '' : 'color: #999';
                         }
                     })
             };
