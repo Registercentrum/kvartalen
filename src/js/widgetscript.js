@@ -528,24 +528,13 @@ window.Stratum.SID = {
                 parent: sprite
             });
             
-            // Ext.Object.each(spriteSlot, function (es) {
-            //     spriteSlot[es].hide();
-            // });
             var attr = me.getErrorPathAttributes(sprite, config, deviation);
             errorSprite.setAttributes(attr);
             errorSprite.show();
 
-            // if (dataValue !== null && dataValue !== 0 && spriteSlot[field] === errorSprite) {
-            //     errorSprite.show();
-            // }
-
             if (dataValue === null || dataValue === 0) {
                 errorSprite.hide();
             }
-            // sprite.addListener('render', function() {
-            //     console.log('changing');
-            //     console.dir(this);
-            // }, errorSprite);
 
 
             if (index === last) {

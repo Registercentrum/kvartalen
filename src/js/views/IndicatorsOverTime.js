@@ -240,7 +240,7 @@
                     grid: true,
                     fields: ['administration', 'vgr'],
                     renderer: function (v) {
-                        return v + '%'; // TODO add leftpad
+                        return v + '%';
                     }
                 }, {
                     type: 'category',
