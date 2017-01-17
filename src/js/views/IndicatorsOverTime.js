@@ -1,6 +1,4 @@
 (function () {
-    'use strict';
-
     Repository.Local.Methods.initialize({
         initSampleSizes: function () {
             var db = Repository.Local.database,
