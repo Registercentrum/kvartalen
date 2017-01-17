@@ -393,7 +393,6 @@ window.Stratum.SID = {
     },
     // Draws three rectangles onto the chart surface describing the current limits.
     // Currently only working for 0-100 scales...
-    // TODO: extract the textSprite addition for use without limit rects.
     drawLimitRectangles: function (chart) {
         var store = chart.getStore(),
             series = chart.getSeries() && chart.getSeries()[0],
