@@ -432,7 +432,9 @@ Repository.Local.Methods.initialize({
                             Ext.util.Format.number(s.get('deviation'), '0.0%')));
                     }
                 },
-                renderer: _m.kvartalenChartRenderer,
+                renderer: _m.kvartalenChartRenderer({
+                    measure: 'deviation'
+                }),
                 listeners: {
                     itemmousedown: function(series, item) {
                         Repository.Local.current.hospital = item.record.get('hospital');

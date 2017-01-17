@@ -441,7 +441,9 @@ Repository.Local.Methods.initialize({
                             Ext.util.Format.number(s.get('deviation'), '0.0%')));
                     }
                 },
-                renderer: _m.kvartalenChartRenderer,
+                renderer: _m.kvartalenChartRenderer({
+                    measure: 'deviation'
+                }),
                 xField: 'name',
                 yField: 'measure'
             }]
