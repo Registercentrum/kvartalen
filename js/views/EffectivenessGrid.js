@@ -364,5 +364,7 @@ Repository.Local.Methods.initialize({
         
     }
 });
+
 //! Tabell över inrapporterade kvalitetsindikatorer per förvaltning för angiven tidsperiod och kön. Infärgning visar måluppfyllelse.
+//# sourceURL=SID/EffectivenessGrid
 
