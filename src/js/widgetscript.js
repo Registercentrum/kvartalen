@@ -71,7 +71,6 @@ window.Stratum.SID = {
                                         direction: 'ASC'
                                     }],
                                     filters: [
-
                                         function (item) {
                                             return Ext.Array.contains(me.getPossibleIndicators({
                                                 indicatorValues: true

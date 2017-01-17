@@ -49,20 +49,46 @@
                     return {};
             }
         },
+        getManagementValuesHelpers: (function () {
+            function checkForQuarters(item, index) {
+                return item.Period.toString().length === 1; // safe check that Period is a single digit
+            }
+
+            function getMonthFromQuarter(quarter) {
+                if (typeof quarter === 'undefined' || quarter > 4)
+                    return 0;
+                else
+                    return 12 / 4 * quarter - 3;
+            }
+
+            function sortByQuarter(a, b) {
+                var aperiod = a.period.split('-'),
+                    bperiod = b.period.split('-');
+                var aDate = new Date(aperiod[0], getMonthFromQuarter(aperiod[1]), 1),
+                    bDate = new Date(bperiod[0], getMonthFromQuarter(bperiod[1]), 1);
+                return aDate - bDate;
+            }
+
+            return {
+                checkForQuarters: checkForQuarters,
+                sortByQuarter: sortByQuarter
+            };
+        }()),
         getManagementValues: function () {
 
             var db = Repository.Local.database,
-                pc = Repository.Local.current.period,
                 gc = parseInt(Repository.Local.current.gender, 10),
                 ic = Repository.Local.current.indicator,
                 ac = Repository.Local.current.administration,
-                yc = (new Date()).getFullYear();
+                yc = (new Date()).getFullYear(),
+                helpers = this.getManagementValuesHelpers;
+
             var unWantedPeriods = [2341, 3412, 4123];
             var minimumYear = yc - 3;
-            var returnHash = {};
             var hasQuarters = false;
 
 
+            var returnHash = {};
 
             function createDataPoint(rc) {
                 var isVgr = (rc.Administration == 55555);
@@ -88,11 +114,7 @@
                 }
             }
 
-            function checkForQuarters(item, index) {
-                return item.Period.toString().length === 1;
-            }
-
-            function filterFunc(rc) {
+            function firstPassFilter(rc) {
                 return rc.Indicator === ic &&
                     (rc.Administration == ac || rc.Administration == 55555) &&
                     rc.YearOfPeriod >= minimumYear &&
@@ -100,31 +122,20 @@
                     unWantedPeriods.indexOf(rc.Period) === -1;
             }
 
-            function getMonthFromQuarter(quarter) {
-                if (typeof quarter === 'undefined' || quarter > 4)
-                    return 0;
-                else
-                    return 12 / 4 * quarter - 3;
-            }
-
-            function sortByQuarter(a, b) {
-                var aperiod = a.period.split('-'),
-                    bperiod = b.period.split('-');
-                var aDate = new Date(aperiod[0], getMonthFromQuarter(aperiod[1]), 1),
-                    bDate = new Date(bperiod[0], getMonthFromQuarter(bperiod[1]), 1);
-                return aDate - bDate;
-            }
-
-            var firstFilter = Ext.Array.filter(db.Indicators, filterFunc);
-            hasQuarters = Ext.Array.some(firstFilter, checkForQuarters);
-            var secondFilter = Ext.Array.filter(firstFilter, function (item) {
+            function secondPassRule(item) {
                 return hasQuarters ? item.Period.toString().length === 1 : item.Period.toString().length === 4;
-            });
+            }
+
+            
+            var firstFilter = Ext.Array.filter(db.Indicators, firstPassFilter);
+            hasQuarters = Ext.Array.some(firstFilter, helpers.checkForQuarters);
+            var secondFilter = Ext.Array.filter(firstFilter, secondPassRule);
+
             Ext.Array
                 .each(secondFilter, createDataPoint);
 
-            var vc = Ext.Object.getValues(returnHash).sort(sortByQuarter);
-            // console.table(vc);
+            var vc = Ext.Object.getValues(returnHash).sort(helpers.sortByQuarter);
+
             this.initSampleSizes();
             return vc;
         },
@@ -209,8 +220,6 @@
                 )
             };
             Ext.fly('ManagementIndicatorContainer').unmask();
-
-
 
             Ext.create('Ext.data.Store', {
                 storeId: 'IndicatorOverTimeStore',
