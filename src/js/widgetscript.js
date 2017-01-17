@@ -400,7 +400,7 @@ window.Stratum.SID = {
             surface = series && series.getSurface(),
             first, limitAbove, limitBelow, maxWidth, maxHeight,
             topLimit, lowerLimit, scale, rectConfig, i,
-            rectSprites, rectSprite, textSprite;
+            rectSprites, rectSprite;
 
         if (!surface || !surface.getRect()) {
             Ext.log({
@@ -410,7 +410,7 @@ window.Stratum.SID = {
             return;
         }
         rectSprites = surface.rectSprites;
-        textSprite = surface.textSprite;
+
         maxWidth = surface.getRect()[2];
         maxHeight = surface.getRect()[3];
         if (!store || store.count() <= 0) {
@@ -418,28 +418,10 @@ window.Stratum.SID = {
                 for (i = 0; i < 3; i++) {
                     rectSprites[i].hide();
                 }
-            }
-            if (!textSprite) {
-                textSprite = surface.textSprite = surface.add({
-                    type: 'text',
-                    x: maxWidth / 2,
-                    y: maxHeight / 2,
-                    'font-size': '18px',
-                    text: 'Data saknas för aktuellt urval.',
-                    fontSize: 20,
-                    zIndex: 10000,
-                    opacity: 0.6,
-                    scalingY: -1,
-                    textAlign: 'center',
-                    fillStyle: '#000'
-                });
-            } else {
-                textSprite.show();
-            }
+            }            
             surface.renderFrame();
             return;
         }
-        textSprite && textSprite.hide();
         first = store.first();
         limitAbove = first.get('limitAbove');
         limitBelow = first.get('limitBelow');
@@ -493,13 +475,17 @@ window.Stratum.SID = {
                 record = storeItems[index],
                 surface = sprite.getParent(),
                 errorSprites = surface.myErrorSprites,
-                spriteSlot,
+                spriteSlot, maxWidth, maxHeight,
                 scale = sprite.attr.scalingY,
                 deviation, errorSprite, i, j,
                 field = sprite.getField(),
-                dataValue;
-
-            if (!record) {
+                dataValue,
+                textSprite = surface.textSprite;
+                textSprite && textSprite.hide();
+                
+            maxWidth = surface.getRect()[2];
+            maxHeight = surface.getRect()[3];
+            if (!store || store.count() <= 0 || !record) {
                 // Hides all sprites if there are no records... And adds a text sprite
                 if (errorSprites && !surface.mySpritesHidden) {
                     Ext.each(errorSprites, function (esSlot) {
@@ -509,11 +495,28 @@ window.Stratum.SID = {
                     });
                     surface.mySpritesHidden = true;
                 }
+                if (!textSprite) {
+                    textSprite = surface.textSprite = surface.add({
+                        type: 'text',
+                        x: maxWidth / 2,
+                        y: maxHeight / 2,
+                        'font-size': '18px',
+                        text: 'Data saknas för aktuellt urval.',
+                        fontSize: 20,
+                        zIndex: 10000,
+                        opacity: 0.6,
+                        scalingY: -1,
+                        textAlign: 'center',
+                        fillStyle: '#000'
+                    });
+                } else {
+                    textSprite.show();
+                }
                 return;
             }
 
+            
             surface.mySpritesHidden = false;
-
             dataValue = record.get(field);
             deviation = (deviationKeys ? record.get(deviationKeys[field]) : record.get('deviation')) * scale;
 
@@ -526,7 +529,7 @@ window.Stratum.SID = {
                 type: 'path',
                 parent: sprite
             });
-            
+
             var attr = me.getErrorPathAttributes(sprite, config, deviation);
             errorSprite.setAttributes(attr);
             errorSprite.show();
