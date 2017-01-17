@@ -481,7 +481,9 @@ window.Stratum.SID = {
                 deviation, errorSprite, i, j,
                 field = sprite.getField(),
                 dataValue,
-                textSprite = surface.textSprite;;
+                textSprite = surface.textSprite;
+                textSprite && textSprite.hide();
+                
             maxWidth = surface.getRect()[2];
             maxHeight = surface.getRect()[3];
             if (!store || store.count() <= 0 || !record) {
@@ -514,9 +516,8 @@ window.Stratum.SID = {
                 return;
             }
 
-            textSprite && textSprite.hide();
+            
             surface.mySpritesHidden = false;
-
             dataValue = record.get(field);
             deviation = (deviationKeys ? record.get(deviationKeys[field]) : record.get('deviation')) * scale;
 
