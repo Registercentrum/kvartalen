@@ -1,7 +1,7 @@
-(function (WidjetUtils) {
+(function () {
     'use strict';
 
-    WidjetUtils.initialize({
+    Repository.Local.Methods.initialize({
         initSampleSizes: function () {
             var db = Repository.Local.database,
                 yc = (new Date()).getFullYear(),
@@ -106,7 +106,7 @@
                     });
                 } else {
                     Ext.Object.merge(returnHash[period], {
-                        admTitle: WidjetUtils.mapAdministrationCodeToName(rc.Administration),
+                        admTitle: Repository.Local.Methods.mapAdministrationCodeToName(rc.Administration),
                         administration: rc.Measure,
                         admDeviation: rc.Deviation,
                         admSize: rc.Size
@@ -126,7 +126,7 @@
                 return hasQuarters ? item.Period.toString().length === 1 : item.Period.toString().length === 4;
             }
 
-            
+
             var firstFilter = Ext.Array.filter(db.Indicators, firstPassFilter);
             hasQuarters = Ext.Array.some(firstFilter, helpers.checkForQuarters);
             var secondFilter = Ext.Array.filter(firstFilter, secondPassRule);
@@ -287,7 +287,7 @@
                                 if (seriesSurface.myErrorSprites) {
                                     Ext.Array.each(seriesSurface.myErrorSprites, function (spriteSlot) {
                                         var sprite = spriteSlot[model.data.name];
-                                        if (sprite.attr.hidden) {
+                                        if (!model.data.disabled) {
                                             sprite.show();
                                         } else {
                                             sprite.hide();
@@ -516,4 +516,4 @@
         }
 
     });
-}(Repository.Local.Methods = Repository.Local.Methods || {}));
+}());
