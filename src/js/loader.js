@@ -62,6 +62,9 @@
                 case '1322':
                     widgetName = 'SID/IndicatorsForQuarters';
                     break;
+                case '2378':
+                    widgetName = 'SID/IndicatorsOverTime';
+                    break;
                 default:
                     break;
             }
@@ -129,6 +132,14 @@
                 '.info-container p:last-child{' +
                 '   margin-bottom: 0;' +
                 '}'+
+                '.grouped-list .x-boundlist-item {' +
+                '    padding: 1px 3px 0 10px' +
+                '}' +
+                '.grouped-list .group-header {' +
+                '    padding: 4px;' +
+                '    font-weight: bold;' +
+                '    border-bottom: 1px solid #ddd;' +
+                '}' +
                 '@media print {' +
                 '    body * {' +
                 '        visibility: hidden;' +
