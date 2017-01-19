@@ -1,0 +1,5 @@
+node_modules
+dist
+/.vscode
+jsconfig.json
+npm-debug.log
