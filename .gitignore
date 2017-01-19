@@ -3,3 +3,4 @@ dist
 /.vscode
 jsconfig.json
 npm-debug.log
+debug.log
