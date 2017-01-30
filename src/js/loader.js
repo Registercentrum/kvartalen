@@ -5,6 +5,7 @@
             relUrl: '//stratum.registercentrum.se',
             widgetUrl: '//stratum.registercentrum.se/api/metadata/pages/{0}',
             // widgetUrl: '//rcutv.rcvg.local',
+            // widgetUrl: '//localhost:3005/api/metadata/pages/{0}',
             APIKey: 'bK3H9bwaG4o=',
             containerId: 'main-container'
         },
