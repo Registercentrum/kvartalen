@@ -228,7 +228,6 @@
             widget._chart = new Ext.chart.CartesianChart({
                 width: '100%',
                 height: 400,
-                border: true,
                 plugins: {
                     ptype: 'chartitemevents'
                 },
@@ -486,6 +485,11 @@
             var chart_container = {
                 xtype: 'container',
                 margin: '8px 0 0 0',
+                border: 1,
+                style: {
+                    borderColor: 'lightgrey',
+                    borderStyle: 'solid'
+                },
                 defaults: {
                     cls: 'WidgetFormItem',
                     editable: false
