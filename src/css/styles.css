@@ -1,0 +1,796 @@
+.ibiz-breadcrumb {
+    margin: 0px 0px 0px 0px;
+}
+
+.breadcrumb,
+.ibiz-breadcontent,
+.ibiz-banner1,
+.ibiz-breadcontent {
+    margin-left: 0px;
+    padding-left: 0px;
+}
+
+.breadcrumb {
+    margin-left: 0px;
+    padding-left: 0px;
+    font-size: 12px;
+    color: #b3b3b3;
+}
+
+.breadcrumb a:link,
+.breadcrumb a:visited,
+.breadcrumb a:active,
+.breadcrumb a:hover {
+    padding-left: 0px;
+    margin-left: 0px;
+    font-size: 12px;
+    font-weight: normal;
+    font-style: normal;
+    text-decoration: none;
+    color: #b3b3b3;
+}
+
+ul.ibiz-hmenu li.f-r-sjukv-rdspersonal-och-forskare.active a {
+    color: white;
+}
+
+ul.ibiz-hmenu li.f-r-sjukv-rdspersonal-och-forskare.active,
+ul.ibiz-hmenu li.f-r-sjukv-rdspersonal-och-forskare a.active:link,
+ul.ibiz-hmenu li.f-r-sjukv-rdspersonal-och-forskare a.active:visited {
+    background-color: #614d7d;
+}
+
+ul.ibiz-hmenu li.f-r-patienter-och-andra-intresserade.active a {
+    color: white;
+}
+
+ul.ibiz-hmenu li.f-r-patienter-och-andra-intresserade.active,
+ul.ibiz-hmenu li.f-r-patienter-och-andra-intresserade a.active:link,
+ul.ibiz-hmenu li.f-r-patienter-och-andra-intresserade a.active:visited {
+    background-color: #a2ad00;
+}
+
+ul.ibiz-hmenu li.j-mf-relser-mellan-sjukhus.active a {
+    color: white;
+}
+
+ul.ibiz-hmenu li.j-mf-relser-mellan-sjukhus.active,
+ul.ibiz-hmenu li.j-mf-relser-mellan-sjukhus a.active:link,
+ul.ibiz-hmenu li.j-mf-relser-mellan-sjukhus a.active:visited {
+    background-color: #aaa38e;
+}
+
+ul.ibiz-hmenu li.l-nkar-till-register.active a {
+    color: white;
+}
+
+ul.ibiz-hmenu li.l-nkar-till-register.active,
+ul.ibiz-hmenu li.l-nkar-till-register a.active:link,
+ul.ibiz-hmenu li.l-nkar-till-register a.active:visited {
+    background-color: #3cb6ce;
+}
+
+ul.ibiz-hmenu li.nyheter-och-kalender.active a,
+ul.ibiz-hmenu li.nyheter-och-kalender a.active {
+    color: white;
+}
+
+ul.ibiz-hmenu li.nyheter-och-kalender.active,
+ul.ibiz-hmenu li.nyheter-och-kalender a.active:link,
+ul.ibiz-hmenu li.nyheter-och-kalender a.active:visited {
+    background-color: #e98300;
+}
+
+ul.ibiz-hmenu li.kontakt a.active {
+    color: white;
+}
+
+.bw-drupal-admin-meny div .ibiz-blockcontent {
+    margin-bottom: 14px;
+}
+
+.bw-drupal-meny div .ibiz-blockheader h3 {
+    text-transform: uppercase;
+}
+
+.bw-drupal-meny div .ibiz-blockheader {
+    display: none;
+    margin-top: 0px;
+    background: #d8d9db;
+    padding-top: 7px;
+    padding-left: 15px;
+    padding-right: 8px;
+    padding-bottom: 7px;
+}
+
+.bw-drupal-meny div .ibiz-blockcontent {
+    background: #d8d9db;
+}
+
+.bw-drupal-meny div div ul {
+    padding-top: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-bottom: 10px;
+}
+
+.bw-drupal-meny div div ul li {
+    margin-bottom: 7px;
+}
+
+.bw-drupal-meny a:link {
+    padding-top: 0px;
+}
+
+.bw-drupal-meny div div ul li a:link {}
+
+.bw-drupal-meny div div ul li a:visited {}
+
+.bw-drupal-meny div div ul li a:hover {
+    color: black;
+}
+
+.bw-drupal-meny div div ul li a:active {}
+
+.bw-vy-meny-omslutande {
+    padding-top: 7px;
+    padding-bottom: 7px;
+}
+
+.bw-vy-meny-rad a.active {
+    font-weight: bold;
+}
+
+.bw-patienter div .ibiz-blockcontent {
+    background: #dade99;
+}
+
+.bw-sjukvardspersonal div .ibiz-blockcontent {
+    background: #cfc9d8;
+}
+
+.bw-jamforelser div .ibiz-blockcontent {
+    background: #dddad2;
+}
+
+.bw-kalender div .ibiz-blockcontent {
+    border-color: #e98300;
+    border-width: 1px;
+    border-top-style: solid;
+    border-right-style: solid;
+    border-bottom-style: solid;
+    border-left-style: solid;
+    margin-bottom: 15px;
+}
+
+.bw-kalender div .ibiz-blockcontent div .view-header {
+    background: #e98300;
+}
+
+.bw-kalender div .ibiz-blockcontent div .view-header p {
+    padding: 8px 0px 8px 8px;
+    margin: 0px 0px 0px 0px;
+    color: white;
+    text-transform: uppercase;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.bw-kalender div .ibiz-blockcontent div .view-header div {
+    background: white;
+    padding: 0px 0px 0px 0px;
+    margin: 0px 0px 0px 0px;
+}
+
+.bw-kalender div .ibiz-blockcontent div .view-header div ul {
+    margin: 0px 0px 0px 0px;
+}
+
+.bw-kalender div .ibiz-blockcontent div .view-header div ul li {
+    background: white;
+    font-size: 10px;
+    padding: 7px 0px 0px 0px;
+    margin: 0px 0px 0px 0px;
+}
+
+.month.mini-day-off,
+.month.mini-day-on {
+    text-align: center;
+    padding-top: 6px;
+    padding-bottom: 6px;
+}
+
+.month.mini-day-on {
+    background: #e98300;
+}
+
+.month.mini-day-on a:hover {
+    color: white;
+}
+
+.sun .month.mini-day-off,
+.sun .month.mini-day-on {
+    color: red;
+}
+
+.calendar-calendar th.days {
+    background-color: #e98300;
+    color: white;
+}
+
+.today .month.mini-day-off,
+.today .month.mini-day-on {
+    background: white;
+    border-color: red;
+    border-width: 1px;
+    border-top-style: solid;
+    border-right-style: solid;
+    border-bottom-style: solid;
+    border-left-style: solid;
+}
+
+.field-name-field-handelsedatum div div {
+    margin-top: -4px;
+    margin-bottom: 4px;
+}
+
+.field-name-field-nyhetsdatum div div .date-display-single,
+.field-name-field-handelsedatum div div .date-display-single {
+    font-size: 14px;
+    color: #8b8c8c;
+}
+
+.faq-question,
+.faq-question span,
+.faq-question span a:link,
+.faq-question span a:visited,
+.faq-question span a:hover,
+.faq-question span a:active {
+    font-size: 14px;
+    margin-bottom: 6px;
+}
+
+.field-name-field-synlig-titel .field-items .field-item {
+    color: #000000;
+    padding: 0px;
+    margin: -6px 0px 2px 0px;
+    font-size: 36px;
+    font-weight: normal;
+    font-style: normal;
+    line-height: 113%;
+}
+
+.ibiz-postcontent h1 {
+    margin: -6px 0px 2px 0px;
+    line-height: 113%;
+}
+
+.bw-registerknapp-block div div p,
+.bw-registerknapp-block {
+    margin: 0px 0px 0px 0px;
+    padding: 0px;
+    line-height: 0px;
+    background: white;
+}
+
+.bw-registerknapp-rubrik div {
+    background: white;
+}
+
+.bw-registerknapp-rubrik div div p {
+    color: #a2ad00;
+    font-size: 14px;
+    font-weight: bold;
+    margin: 0px 0px 0px 0px;
+    padding: 0px;
+}
+
+.bw-registerknapp-fot div {
+    background: white;
+}
+
+.bw-registerknapp-fot div div p {
+    color: #a2ad00;
+    font-size: 1px;
+    line-height: 1px;
+    font-weight: bold;
+    margin: 0px 0px 8px 0px;
+    padding: 0px;
+}
+
+.bw-litet-datum,
+.date-display-single {
+    font-size: 9px;
+    color: #8b8c8c;
+}
+
+.bw-nyheter-block div .ibiz-blockheader {
+    margin-top: 0px;
+    background: #e98300;
+    padding-top: 7px;
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-bottom: 7px;
+}
+
+.view-nyheter.bw-nyheter-block {
+    background: white;
+    border-color: #e98300;
+    border-width: 1px;
+    border-top-style: none;
+    border-right-style: solid;
+    border-bottom-style: solid;
+    border-left-style: solid;
+    margin-bottom: 14px;
+}
+
+.bw-nyheter-fot {
+    padding-top: 7px;
+    padding-left: 8px;
+    padding-right: 14px;
+    padding-bottom: 9px;
+    text-align: right;
+}
+
+.bw-nyheter-fot a:hover {
+    color: black;
+}
+
+.xxxbw-nyheter-block div .ibiz-blockcontent p {
+    margin: 0px;
+}
+
+.bw-nyheter-block div .ibiz-blockheader h3 {
+    text-transform: uppercase;
+    color: #ffffff;
+    font-size: 12px;
+}
+
+.xxxbw-nyheter-block div .ibiz-blockcontent div .view-footer {
+    background: white;
+    color: black;
+    margin-top: 0px;
+    margin-bottom: 14px;
+    border-color: #e98300;
+    border-width: 1px;
+    border-top-style: none;
+    border-right-style: solid;
+    border-bottom-style: solid;
+    border-left-style: solid;
+    padding: 5px 10px 5px 7px;
+}
+
+.xxxbw-nyheter-block div .ibiz-blockcontent div .ibiz-pager {
+    margin: 0px;
+    background: white;
+    border-color: #e98300;
+    border-width: 1px;
+    border-top-style: none;
+    border-right-style: solid;
+    border-bottom-style: none;
+    border-left-style: solid;
+}
+
+.xxxibiz-pager a:hover {
+    background: #f2b566;
+}
+
+.xxxbw-nyhetslista-rad .views-field-field-nyhetsdatum {
+    line-height: 10px;
+}
+
+.xxxbw-nyhetslista-rad .views-field-field-nyhetsdatum .date-display-single {
+    font-size: 14px;
+    color: #8b8c8c;
+}
+
+.xxxbw-nyhetslista-rad .views-field-title a:link,
+.xxxbw-nyhetslista-rad .views-field-title a:visited,
+.xxxbw-nyhetslista-rad .views-field-title a:active,
+.xxxbw-nyhetslista-rad .views-field-title a:hover {
+    color: #3BB6CE;
+    color: black;
+}
+
+.xxxbw-nyhetslista-rad {
+    padding-top: 4px;
+    padding-bottom: 10px;
+}
+
+.bw-nyhetsarkiv {
+    margin-top: 13px;
+}
+
+.bw-nyhetsarkiv-rad .views-field-field-nyhetsdatum {
+    margin: 0px;
+    padding: 0px;
+}
+
+.bw-nyhetsarkiv-rad .views-field-field-nyhetsdatum div span {
+    margin-top: -4px;
+    margin-bottom: 0px;
+    padding-bottom: 0px;
+    font-size: 14px;
+    color: #8b8c8c;
+}
+
+.bw-nyhetsarkiv-rad .views-field-field-nyhetsdatum {
+    margin-bottom: -4px;
+}
+
+.bw-nyhetsarkiv-rad .views-field-title span a:link,
+.bw-nyhetsarkiv-rad .views-field-title span a:visited,
+.bw-nyhetsarkiv-rad .views-field-title span a:active,
+.bw-nyhetsarkiv-rad .views-field-title span a:hover {
+    color: #3BB6CE;
+}
+
+.bw-nyhetsarkiv-rad {
+    margin-bottom: 14px;
+}
+
+.bw-dokument-register div {
+    background: white;
+}
+
+.bw-dokument-register div .ibiz-blockheader {
+    margin-top: 0px;
+    background: #8ad3e2;
+    padding-top: 7px;
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-bottom: 7px;
+}
+
+.bw-dokument-register .ibiz-block {
+    border-color: #3cb6ce;
+    margin-top: 0px;
+    border-width: 1px;
+    border-top-style: solid;
+    border-right-style: solid;
+    border-bottom-style: solid;
+    border-left-style: solid;
+}
+
+.bw-dokument-register div .ibiz-blockheader h3 {
+    text-transform: uppercase;
+    color: black;
+    font-size: 12px;
+}
+
+.bw-dokument-register div .ibiz-blockheader h3 {
+    color: #000000;
+}
+
+.bw-dokument-rad {
+    margin-right: 8px;
+    margin-left: 8px;
+    margin-top: 4px;
+    margin-bottom: 10px;
+}
+
+.bw-vetart-block div {
+    background: white;
+}
+
+.bw-vetart-block div .ibiz-blockheader {
+    margin-top: 0px;
+    background: #e98300;
+    padding-top: 7px;
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-bottom: 7px;
+}
+
+.bw-vetart-block .ibiz-block {
+    border-color: #e98300;
+    margin-top: 14px;
+    border-width: 1px;
+    border-top-style: solid;
+    border-right-style: solid;
+    border-bottom-style: solid;
+    border-left-style: solid;
+}
+
+.bw-vetart-block div .ibiz-blockheader h3 {
+    text-transform: uppercase;
+    color: black;
+}
+
+.bw-vetart-block div .ibiz-blockheader h3 {
+    color: #000000;
+}
+
+.bw-vetart-rad {
+    margin-right: 8px;
+    margin-left: 8px;
+    margin-top: 4px;
+    margin-bottom: 6px;
+}
+
+.bw-tabell-typ1 td {
+    padding-right: 10px;
+}
+
+.bw-drupal-admin-meny div .ibiz-blockheader h3 {
+    text-transform: uppercase;
+}
+
+.bw-drupal-admin-meny div .ibiz-blockheader {
+    margin-top: 0px;
+    background: #ffefb2;
+    padding-top: 7px;
+    padding-left: 15px;
+    padding-right: 8px;
+    padding-bottom: 7px;
+}
+
+.bw-drupal-admin-meny div div ul {
+    padding-top: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-bottom: 10px;
+}
+
+.bw-drupal-admin-meny div div ul li {
+    margin-bottom: 7px;
+}
+
+.bw-drupal-admin-meny a:link {
+    padding-top: 0px;
+}
+
+.bw-drupal-admin-meny div div ul li a:link {}
+
+.bw-drupal-admin-meny div div ul li a:visited {}
+
+.bw-drupal-admin-meny div div ul li a:hover {
+    color: #969696;
+}
+
+.bw-drupal-admin-meny div div ul li a:active {}
+
+.bw-vy-meny-omslutande {
+    padding-top: 7px;
+    padding-bottom: 7px;
+}
+
+.bw-vy-meny-rad a.active {
+    font-weight: bold;
+}
+
+.bw-dokumentarkiv .content .quicktabs-wrapper .item-list ul li.active {
+    background: #FFEFB2;
+    color: black;
+}
+
+.bw-dokumentarkiv .content .quicktabs-wrapper .item-list ul li.active a:link {
+    color: black;
+}
+
+.bw-dokumentarkiv .content .quicktabs-wrapper .item-list ul li.active a:visited {
+    color: black;
+}
+
+.bw-dokumentarkiv .content .quicktabs-wrapper .item-list ul li.active a:hover {
+    color: black;
+}
+
+.bw-dokumentarkiv .content .quicktabs-wrapper .item-list ul li.active a:active {
+    color: black;
+}
+
+#quicktabs-container-dokumentarkiv {
+    background: #FFEFB2;
+}
+
+.file img {
+    margin: 0px;
+    padding: 0px;
+}
+
+.ibiz-post,
+.ibiz-article {
+    margin-left: 0px;
+    margin-right: 0px;
+    margin-top: 0px;
+    margin-bottom: 15px;
+    padding: 0px;
+}
+
+article .ibiz-post {
+    padding: 0px;
+    margin: 0px;
+}
+
+.ibiz-content-layout .ibiz-sidebar1 {
+    margin-left: 0px;
+    padding-right: 13px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+
+.ibiz-content-layout .ibiz-sidebar2 {
+    padding-left: 15px;
+    margin-right: 0px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+
+a:link[href^="mailto:"] {
+    color: #3BB6CE;
+}
+
+.ibiz-blockcontent {
+    background: white;
+}
+
+.ibiz-article td,
+.ibiz-article th {
+    padding: 0px;
+}
+
+.search-advanced .criterion div div .form-item-type-systemsida,
+.search-advanced .criterion div div .form-item-type-vetenskaplig-artikel,
+.search-advanced .criterion div div .form-item-type-webform,
+.search-advanced .criterion div div .form-item-type-article,
+.search-advanced .criterion .form-item-language,
+.search-result .search-snippet-info .search-info {
+    display: none;
+}
+
+form.ibiz-search input[type="text"] {
+    padding: 3px 0px 3px 4px;
+}
+
+p.rteindent1 {
+    margin-left: 25px;
+}
+
+p.prteindent2 {
+    margin-left: 50px;
+}
+
+p.rteindent3 {
+    margin-left: 75px;
+}
+
+p.rteindent4 {
+    margin-left: 100px;
+}
+
+.print_html .caption p {
+    display: none;
+}
+
+.print-page img {
+    margin-right: 5px;
+    padding-top: 5px;
+}
+
+.block-print .content .print_html {
+    margin-left: 0px;
+}
+
+a.print-page,
+a.print-page:visited,
+a.print-page:active,
+a.print-page:hover {
+    color: black;
+    text-decoration: none;
+}
+
+.ibiz-article span.print-link {
+    display: none;
+}
+
+.field-content a:hover {
+    color: black;
+}
+
+.ibiz-postcontent ul>li:before,
+.ibiz-post ul>li:before,
+.ibiz-textblock ul>li:before {
+    margin-right: 3px;
+}
+
+.field-name-field-nyhetsdatum {
+    margin-top: -4px;
+    margin-bottom: 4px;
+    font-size: 9px;
+    color: #8b8c8c;
+}
+
+.region-footer-message a:active,
+.region-footer-message a:visited,
+.region-footer-message a:link,
+.region-footer-message a {
+    font-size: 11px;
+    color: #354447;
+    text-decoration: none;
+}
+
+.image-field-caption {
+    margin-bottom: 14px;
+}
+
+.image-field-caption,
+.image-field-caption p,
+.image-field-caption a,
+.image-field-caption p a:link,
+.image-field-caption p a:hover,
+.image-field-caption p a:visited {
+    margin-left: 0px;
+    font-style: italic;
+    font-size: 14px;
+    text-align: left;
+    line-height: 125%;
+}
+
+.image-field-caption a:link[href^="mailto:"],
+.image-field-caption a:visited[href^="mailto:"] {
+    font-size: 14px;
+    color: #3BB6CE;
+}
+
+.ibiz-postcontent {
+    line-height: 20px;
+}
+
+.ibiz-slogan {
+    font-size: 12px;
+    line-height: 14px;
+}
+
+#ibiz-firstpage-table td {
+    padding-top: 14px;
+}
+
+#ibiz-firstpage-table td:first-child {
+    padding-left: 14px;
+}
+
+.ibiz-postcontent h6 {
+    margin-bottom: 14px;
+}
+
+.ibiz-postcontent h6,
+.ibiz-postcontent h6 p,
+.ibiz-postcontent h6 a,
+.ibiz-postcontent h6 a:link,
+.ibiz-postcontent h6 a:hover,
+.ibiz-postcontent h6 a:visited {
+    margin-left: 0px;
+    font-weight: normal;
+    font-style: italic;
+    font-size: 14px;
+    text-align: left;
+    line-height: 125%;
+}
+
+.ibiz-postcontent h6 a:link[href^="mailto:"] {
+    font-size: 14px;
+    color: #3BB6CE;
+}
+
+#ui-datepicker-div {
+    width: 20em !important;
+}
+
+.node-form.node-vetenskaplig_artikel-form #edit-field-register-svenska {
+    width: 50%;
+    float: left;
+}
+
+.node-form.node-vetenskaplig_artikel-form #edit-field-register-engelska- {
+    width: 50%;
+    float: right;
+}
+
+body.logged-in #sliding-popup {
+    display: none !important;
+}
+
+#sliding-popup .popup-content #popup-text {
+    max-width: 75%;
+}
