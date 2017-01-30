@@ -4,7 +4,7 @@ const express = require('express');
 const app = express();
 const fs = require('fs');
 
-const port = process.env.DEV_PORT || 3000;
+const port = process.env.DEV_PORT || 3005;
 const baseUrl = '';
 
 const codeToNameMap = {
@@ -21,10 +21,9 @@ app.use(function(req, res, next) {
   next();
 });
 
-app.get('/api/metadata/pages/:pageId', function (req, res) {
-    console.log('Got a hit');
+app.get('/api/metadata/pages/:pageId', function (req, res) {    
     const pageId = req.params.pageId;
-    console.log(req.params.pageId);
+    console.log(` serving widget number ${pageId}, as ${codeToNameMap[pageId]}`);
     fs.readFile(`src/${pageId}.html`, 'utf-8', function (err, htmlFile) {
         if (err)
             return res.status(401).end(err);
