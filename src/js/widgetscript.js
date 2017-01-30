@@ -174,12 +174,14 @@ window.Stratum.SID = {
         });
     },
     getAdministrationCodeNamePairs: function () {
-        var ret = [];
-        var _callee = this.getAdministrationCodeNamePairs;
-        if (!_callee.cache) {
+        var hospitals = [],
+        managements = [],
+        _callee = this.getAdministrationCodeNamePairs;
+
+        if (!_callee.cache) {            
             if (Repository.Local.domainMaps.hospital) {
                 Ext.Object.each(Repository.Local.domainMaps.hospital, function (key, val) {
-                    ret.push({
+                    hospitals.push({
                         type: 'hospital',
                         valueName: val,
                         valueCode: parseInt(key, 10)
@@ -188,14 +190,19 @@ window.Stratum.SID = {
             }
             if (Repository.Local.domainMaps.management) {
                 Ext.Object.each(Repository.Local.domainMaps.management, function (key, val) {
-                    ret.push({
+                    managements.push({
                         type: 'management',
                         valueName: val,
                         valueCode: parseInt(key, 10)
                     });
                 });
             }
-            _callee.cache = ret;
+            function sortByValueName(a,b) {
+                return a.valueName.localeCompare(b.valueName);
+            }
+            Ext.Array.sort(managements, sortByValueName);
+            Ext.Array.sort(hospitals, sortByValueName);
+            _callee.cache = Ext.Array.merge(hospitals, managements);
         }
         return _callee.cache;
     },
