@@ -1,5 +1,5 @@
 Repository.Local.Methods.initialize({
-    isWithinYear: function(currentYear, year, period) {
+    isWithinYear: function (currentYear, year, period) {
         var yearDiff = currentYear - year,
             quarters = ['2341', '3412', '4123', '1234'];
         if (period > 4 || period < 1 || yearDiff > 1 || yearDiff < 0) {
@@ -7,7 +7,7 @@ Repository.Local.Methods.initialize({
         }
         return yearDiff === 0 ? quarters.slice(period - 1).concat(period.toString()) : quarters.slice(0, -5 + period);
     },
-    isWithinRange: function(aRegistration, aPeriod, aYear) {
+    isWithinRange: function (aRegistration, aPeriod, aYear) {
         if (aRegistration.Period > 4) {
             return false;
         }
@@ -24,7 +24,7 @@ Repository.Local.Methods.initialize({
         return (f && y === aYear) || (!f && y === aYear - 1);
     },
     //TODO: the method below could be made more generic by accepting a discriminating parameter (ie. Hospital, Gender, Period, YearOfPeriod).
-    initSampleSizes: function() {
+    initSampleSizes: function () {
         var widget = this,
             db = Repository.Local.database,
             pc = Repository.Local.current.period,
@@ -39,7 +39,7 @@ Repository.Local.Methods.initialize({
                 ycs: {}
             },
             iwr;
-        Ext.Array.forEach(db.Indicators, function(rc) {
+        Ext.Array.forEach(db.Indicators, function (rc) {
             if (rc.Indicator === ic) {
                 iwr = widget.isWithinRange(rc, pc, yc);
                 if (iwr && rc.Gender === gc) {
@@ -55,7 +55,7 @@ Repository.Local.Methods.initialize({
                     curr.gcs[rc.Gender].size += rc.Size;
                 }
                 if (rc.Gender === gc && rc.Administration === ma) {
-                    Ext.Array.each(widget.isWithinYear(yc, rc.YearOfPeriod, rc.Period), function(item) {
+                    Ext.Array.each(widget.isWithinYear(yc, rc.YearOfPeriod, rc.Period), function (item) {
                         curr.pcs[item] = curr.pcs[item] || {
                             size: 0
                         };
@@ -66,22 +66,22 @@ Repository.Local.Methods.initialize({
             }
         });
     },
-    dropdownRefresh: function(scope, _m) {
+    dropdownRefresh: function (scope, _m) {
         var combos, store = Ext.data.StoreManager.lookup('QuarterlyIndicatorStore');
         store && store.loadData(this.getQuarterlyValues());
         combos = scope.ownerCt.query('combo');
-        Ext.Array.each(combos, function(cc) {
+        Ext.Array.each(combos, function (cc) {
             !cc.isIndicatorCombo && cc.getStore().reload(); // Ensure that combo with itemTpl is reexecuted when combo list is opened.
         });
         _m.drawLimitRectangles(this._chart);
     },
-    sizeRefresh: function(scope, sortType) {
+    sizeRefresh: function (scope, sortType) {
         var sizes = this.getSampleSizes(sortType);
-        scope.each(function(aRecord) {
+        scope.each(function (aRecord) {
             aRecord.data.size = sizes[aRecord.data.valueCode] ? sizes[aRecord.data.valueCode].size : 0; // Add total sample size to each store record.
         });
     },
-    getSampleSizes: function(sorttype) {
+    getSampleSizes: function (sorttype) {
         var sortenum = Repository.Local.SORTTYPE,
             ret = {};
         if (!Repository.Local.current.sizes) {
@@ -102,7 +102,7 @@ Repository.Local.Methods.initialize({
         }
         return ret;
     },
-    getQuarterlyValues: function() {
+    getQuarterlyValues: function () {
         var widget = this,
             db = Repository.Local.database,
             pc = Repository.Local.current.period,
@@ -113,8 +113,10 @@ Repository.Local.Methods.initialize({
             tv = Repository.Local.Methods.getIndicatorTargets(ic),
             vc = [];
 
-        Ext.Array.forEach(db.Indicators, function(rc) {
-            if (rc.Indicator === ic && rc.Gender === gc && rc.Administration === hc && widget.isWithinRange(rc, pc, yc)) {
+        Ext.Array.forEach(db.Indicators, function (rc) {
+            // hc could be a number sometimes string of number, 
+            // rc.Administration is string, double equals coerces the values to same type.
+            if (rc.Indicator === ic && rc.Gender === gc && rc.Administration == hc && widget.isWithinRange(rc, pc, yc)) {
                 //TODO: should instantiate QuarterlyIndicatorModel instead ...
                 vc.push({
                     name: 'Kvartal ' + rc.Period.toString() + '\n' + rc.YearOfPeriod.toString(),
@@ -133,14 +135,14 @@ Repository.Local.Methods.initialize({
         //  var time = window.performance.now();
         this.initSampleSizes();
         //  console.log('Time taken: ' + (window.performance.now()-time));
-        return vc.sort(function(a, b) {
+        return vc.sort(function (a, b) {
             return a.year === b.year ? (a.period === b.period ? 0 : (a.period < b.period ? -1 : 1)) : (a.year < b.year ? -1 : 1);
         });
     },
-    preInit: function() {
+    preInit: function () {
         Ext.fly('QuarterlyIndicatorContainer').mask('Hämtar data ...');
     },
-    init: function(_m) {
+    init: function (_m) {
         var widget = this;
         Ext.fly('QuarterlyIndicatorContainer').unmask();
 
@@ -197,7 +199,7 @@ Repository.Local.Methods.initialize({
             cls: 'WidgetListItem',
             itemTpl: Ext.create('Ext.XTemplate',
                 '<span class="WidgetListItemInner" style="{[this.getStyle(values)]}">{valueName}</span>', {
-                    getStyle: function(aRecord) {
+                    getStyle: function (aRecord) {
                         return aRecord.size === undefined || aRecord.size > 0 ? '' : 'color: #999';
                     }
                 }
@@ -230,12 +232,12 @@ Repository.Local.Methods.initialize({
                 valueField: 'valueCode',
                 value: Repository.Local.current.indicator,
                 listConfig: {
-                    getInnerTpl: function() {
+                    getInnerTpl: function () {
                         return '<i>{title}</i><br/>{valueName}';
                     }
                 },
                 listeners: {
-                    select: function(aCombo, aSelection) {
+                    select: function (aCombo, aSelection) {
                         Repository.Local.current.indicator = aSelection.get('valueCode');
                         widget.dropdownRefresh(aCombo, _m);
                     }
@@ -254,7 +256,7 @@ Repository.Local.Methods.initialize({
                 width: '100%',
                 items: [{
                     xtype: 'combobox',
-                checkChangeEvents: Ext.isIE10p ? ['change', 'propertychange', 'keyup'] : ['change', 'input', 'textInput', 'keyup', 'dragdrop'],
+                    checkChangeEvents: Ext.isIE10p ? ['change', 'propertychange', 'keyup'] : ['change', 'input', 'textInput', 'keyup', 'dragdrop'],
                     flex: 1,
                     padding: '0 5px 0 0',
                     emptyText: 'Välj period ...',
@@ -262,7 +264,7 @@ Repository.Local.Methods.initialize({
                         fields: ['valueCode', 'valueName'],
                         data: _m.getPeriodCodeNamePairs(),
                         listeners: {
-                            datachanged: function() {
+                            datachanged: function () {
                                 widget.sizeRefresh(this, Repository.Local.SORTTYPE.Period);
                             }
                         }
@@ -274,14 +276,14 @@ Repository.Local.Methods.initialize({
                     listConfig: sampleSizeConfiguration,
                     value: Repository.Local.current.period,
                     listeners: {
-                        select: function(aCombo, aSelection) {
+                        select: function (aCombo, aSelection) {
                             Repository.Local.current.period = aSelection.get('valueCode');
                             widget.dropdownRefresh(aCombo, _m);
                         }
                     }
                 }, {
                     xtype: 'combobox',
-                checkChangeEvents: Ext.isIE10p ? ['change', 'propertychange', 'keyup'] : ['change', 'input', 'textInput', 'keyup', 'dragdrop'],
+                    checkChangeEvents: Ext.isIE10p ? ['change', 'propertychange', 'keyup'] : ['change', 'input', 'textInput', 'keyup', 'dragdrop'],
                     width: 110,
                     padding: '0 5px 0 0',
                     labelWidth: 20,
@@ -291,7 +293,7 @@ Repository.Local.Methods.initialize({
                         fields: ['valueCode', 'valueName'],
                         data: _m.getPossibleYears(),
                         listeners: {
-                            datachanged: function() {
+                            datachanged: function () {
                                 widget.sizeRefresh(this, Repository.Local.SORTTYPE.Year);
                             }
                         }
@@ -301,21 +303,21 @@ Repository.Local.Methods.initialize({
                     valueField: 'valueCode',
                     value: Repository.Local.current.yearOfPeriod,
                     listeners: {
-                        select: function(aCombo, aSelection) {
+                        select: function (aCombo, aSelection) {
                             Repository.Local.current.yearOfPeriod = aSelection.get('valueCode');
                             widget.dropdownRefresh(aCombo, _m);
                         }
                     }
                 }, {
                     xtype: 'combobox',
-                checkChangeEvents: Ext.isIE10p ? ['change', 'propertychange', 'keyup'] : ['change', 'input', 'textInput', 'keyup', 'dragdrop'],
+                    checkChangeEvents: Ext.isIE10p ? ['change', 'propertychange', 'keyup'] : ['change', 'input', 'textInput', 'keyup', 'dragdrop'],
                     width: 170,
                     emptyText: 'Välj kön ...',
                     store: Ext.create('Ext.data.Store', { //TODO: use domainForStore in local script to generate store.
                         fields: ['valueCode', 'valueName'],
                         data: _m.domainForStore(_m.mapGenderCodeToName),
                         listeners: {
-                            datachanged: function() {
+                            datachanged: function () {
                                 widget.sizeRefresh(this, Repository.Local.SORTTYPE.Gender);
                             }
                         }
@@ -326,7 +328,7 @@ Repository.Local.Methods.initialize({
                     listConfig: sampleSizeConfiguration,
                     value: Repository.Local.current.gender,
                     listeners: {
-                        select: function(aCombo, aSelection) {
+                        select: function (aCombo, aSelection) {
                             Repository.Local.current.gender = aSelection.get('valueCode');
                             widget.dropdownRefresh(aCombo, _m);
                         }
@@ -349,7 +351,7 @@ Repository.Local.Methods.initialize({
                     fields: ['valueCode', 'valueName'],
                     data: _m.domainForStore(_m.mapHospitalCodeToName),
                     listeners: {
-                        datachanged: function() { //TODO: refactor into separate method to reuse.
+                        datachanged: function () { //TODO: refactor into separate method to reuse.
                             widget.sizeRefresh(this, Repository.Local.SORTTYPE.Hospital);
                         }
                     },
@@ -359,9 +361,12 @@ Repository.Local.Methods.initialize({
                     }]
                 }),
                 listeners: {
-                    select: function(aCombo, aSelection) {
-                        Repository.Local.current.hospital = aSelection.get('valueCode');
-                        Repository.Local.current.management = _m.toManagementCode(Repository.Local.current.hospital);
+                    select: function (aCombo, aSelection) {
+                        var value = aSelection.get('valueCode');
+                        Repository.Local.current.hospital = value;
+                        console.log('hospital: ', value, value.toString().length);
+                        Repository.Local.current.administration = value;
+                        Repository.Local.current.management = _m.toManagementCode(value);
                         widget.dropdownRefresh(this, _m);
                     }
                 }
@@ -390,13 +395,15 @@ Repository.Local.Methods.initialize({
                 left: 20
             },
             listeners: {
-                redraw: function(chart) {
+                redraw: function (chart) {
                     try {
-                        if(!chart._lastInnerRect || chart.innerRect[3] !== chart._lastInnerRect[3]){
+                        if (!chart._lastInnerRect || chart.innerRect[3] !== chart._lastInnerRect[3]) {
                             _m.drawLimitRectangles(chart);
                         }
                         chart._lastInnerRect = chart.innerRect;
-                    } catch (e) {}
+                    } catch (e) {
+                        console.error(e);
+                    }
                 }
             },
             axes: [{
@@ -405,7 +412,7 @@ Repository.Local.Methods.initialize({
                 minimum: 0,
                 maximum: 100,
                 grid: true,
-                renderer: function(v) {
+                renderer: function (v) {
                     return v + '%';
                 }
             }, {
@@ -430,7 +437,7 @@ Repository.Local.Methods.initialize({
                 tips: {
                     trackMouse: true,
                     dismissDelay: 0,
-                    renderer: function(s) {
+                    renderer: function (s) {
                         if (!s) {
                             return;
                         }

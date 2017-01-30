@@ -398,7 +398,17 @@
                 value: Repository.Local.current.administration,
                 listeners: {
                     select: function (aCombo, aSelection) {
-                        Repository.Local.current.administration = aSelection.get('valueCode');
+                        var value = aSelection.get('valueCode');
+                        Repository.Local.current.administration = value;                        
+                        Repository.Local.current.management = _m.toManagementCode(value);
+                        
+                        if(value.toString().length == 6) {
+                            Repository.Local.current.hospital = value;
+                        }
+
+                        if(value.toString().length == 5) {
+                            Repository.Local.current.hospital = value + '1';
+                        }
                         widget.dropdownRefresh(aCombo, _m);
                     }
                 },
