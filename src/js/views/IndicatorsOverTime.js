@@ -228,7 +228,6 @@
             widget._chart = new Ext.chart.CartesianChart({
                 width: '100%',
                 height: 400,
-                border: true,
                 plugins: {
                     ptype: 'chartitemevents'
                 },
@@ -399,7 +398,17 @@
                 value: Repository.Local.current.administration,
                 listeners: {
                     select: function (aCombo, aSelection) {
-                        Repository.Local.current.administration = aSelection.get('valueCode');
+                        var value = aSelection.get('valueCode');
+                        Repository.Local.current.administration = value;                        
+                        Repository.Local.current.management = _m.toManagementCode(value);
+                        
+                        if(value.toString().length == 6) {
+                            Repository.Local.current.hospital = value;
+                        }
+
+                        if(value.toString().length == 5) {
+                            Repository.Local.current.hospital = value + '1';
+                        }
                         widget.dropdownRefresh(aCombo, _m);
                     }
                 },
@@ -486,6 +495,11 @@
             var chart_container = {
                 xtype: 'container',
                 margin: '8px 0 0 0',
+                border: 1,
+                style: {
+                    borderColor: 'lightgrey',
+                    borderStyle: 'solid'
+                },
                 defaults: {
                     cls: 'WidgetFormItem',
                     editable: false

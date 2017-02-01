@@ -336,7 +336,10 @@ Repository.Local.Methods.initialize({
                 value: Repository.Local.current.management,
                 listeners: {
                     select: function(aCombo, aSelection) {
-                        Repository.Local.current.management = aSelection.get('valueCode');
+                        var value = aSelection.get('valueCode');
+                        Repository.Local.current.management = value;
+                        Repository.Local.current.administration = value;
+                        Repository.Local.current.hospital = parseInt(value + '1', 10);
                         widget.dropdownRefresh(aCombo, _m);
                     }
                 }
