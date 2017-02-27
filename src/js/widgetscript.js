@@ -368,6 +368,10 @@ window.Stratum.SID = {
         var map = Repository.Local.domainMaps.gender;
         return aGenderCode ? map[aGenderCode.toString()] : map;
     },
+    mapPeriodCodeToName: function(aPeriodCode) {
+        var map = Repository.Local.domainMaps.periods;
+        return aPeriodCode ? map[aPeriodCode.toString()]: map;
+    },
     toRegisterCode: function (aIndicatorCode) {
         return +(aIndicatorCode.toString().substr(0, 2));
     },
