@@ -363,8 +363,7 @@ Repository.Local.Methods.initialize({
                 listeners: {
                     select: function (aCombo, aSelection) {
                         var value = aSelection.get('valueCode');
-                        Repository.Local.current.hospital = value;
-                        console.log('hospital: ', value, value.toString().length);
+                        Repository.Local.current.hospital = value;                        
                         Repository.Local.current.administration = value;
                         Repository.Local.current.management = _m.toManagementCode(value);
                         widget.dropdownRefresh(this, _m);
@@ -402,7 +401,7 @@ Repository.Local.Methods.initialize({
                         }
                         chart._lastInnerRect = chart.innerRect;
                     } catch (e) {
-                        console.error(e);
+                        
                     }
                 }
             },
