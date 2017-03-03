@@ -30,7 +30,7 @@ gulp.task('serve', (cb) => {
 
 process.on('exit', function () {
     // In case the gulp process is closed (e.g. by pressing [CTRL + C]) stop both processes
-    apiServer.kill();
+    apiServer && apiServer.kill();
 });
 
 gulp.task('default', ['serve','start:api']);
