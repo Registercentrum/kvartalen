@@ -316,35 +316,107 @@ Repository.Local.Methods.initialize({
             ]
         });
 
+        function makeTable(data, width) {
+            var table = document.createElement('table');
+            var div = document.createElement('div');
+
+            table.width = width;
+            table.borderColor = '#000000';
+            table.border = '1px';
+            var len = data.length;
+            var rows = 1;
+            var keys = [
+                {
+                    title: 'Observationer',
+                    key: 'size'
+                }
+            ];
+            for (var i = 0; i < rows; i++) {
+                var tr = document.createElement('tr');
+                for (var j = -1; j < len; j++) {
+                    var td = document.createElement('td');
+                    if (j === -1) {
+                        td.innerText = keys[i].title;
+                    } else {
+                        td.innerText = data.items[j].get(keys[i].key);
+                    }
+                    tr.appendChild(td);
+                }
+                table.appendChild(tr);
+            }
+            div.appendChild(table);
+            return div.outerHTML;
+        }
+
         getPicBtn = Ext.create('Ext.Button', {
             text: 'Hämta Bild',
             handler: function() {
                 var div = document.getElementById('tmp');
 
-                var chart = widget._chart;
-                var genChart = chart.getImage('image');
+                var chart = widget._chart,
+                    store = chart.getStore(),
+                    chartHeight = chart.getHeight(),
+                    chartWidth = chart.getWidth();
+                var data = store.getData();
+                var html = makeTable(data, chartWidth);
+
+                var doc = document.implementation.createHTMLDocument('');
+                doc.write(html);
+                doc.documentElement.setAttribute(
+                    'xmlns',
+                    doc.documentElement.namespaceURI
+                );
+                html = new XMLSerializer().serializeToString(
+                    doc.getElementsByTagName('div')[0]
+                );
+
                 var cnvs = document.createElement('canvas');
-                cnvs.width = chart.getWidth();
-                cnvs.height = chart.getHeight() +100;                
+                cnvs.width = chartWidth;
+                cnvs.height = chartHeight + 200;
+
+                div.appendChild(cnvs);
+                // div.innerHTML = html;
+                
+                var DOMURL = window.URL || window.webkitURL || window;
+                // debugger;
+
+                var svgXml = '<svg xmlns="http://www.w3.org/2000/svg" width="'+chartWidth+'" height="200">' +
+                    '<foreignObject width="100%" height="100%">' +
+                    html +
+                    '</foreignObject>' +
+                    '</svg>';
+                var img = new Image();
+                var svg = new Blob([svgXml], { type: 'image/svg+xml' });
+                var url = DOMURL.createObjectURL(svg);
+
+                // var genChart = chart.getImage('image');
+
                 var ctx = cnvs.getContext('2d');
+                img.onload = function() {                    
+                    ctx.drawImage(img, 0, 0);
+                    DOMURL.revokeObjectURL(url);
+                };
+                img.src = url;
 
-                ctx.font = '18px cartogothic_stdregular,open_sans,helvetica,arial,sans-serif';
-                var indicatorText = 'Indicator: '+ _m.mapTitleCodeToName(Repository.Local.current.indicator);
-                var timePeriod = "Tidsperiod: " + _m.mapPeriodCodeToName(Repository.Local.current.period) + ' (' + Repository.Local.current.yearOfPeriod +')';
-                var gender = 'Kön: ' + _m.mapGenderCodeToName(Repository.Local.current.gender);
+                // ctx.font = '18px cartogothic_stdregular,open_sans,helvetica,arial,sans-serif';
+                // var indicatorText = 'Indicator: ' +
+                //     _m.mapTitleCodeToName(Repository.Local.current.indicator);
+                // var timePeriod = 'Tidsperiod: ' +
+                //     _m.mapPeriodCodeToName(Repository.Local.current.period) +
+                //     ' (' +
+                //     Repository.Local.current.yearOfPeriod +
+                //     ')';
+                // var gender = 'Kön: ' +
+                //     _m.mapGenderCodeToName(Repository.Local.current.gender);
 
-                ctx.fillText(indicatorText, 10, 20);
-                ctx.fillText(timePeriod, 10, 40);
-                ctx.fillText(gender, 10, 60);
+                // ctx.fillText(indicatorText, 10, 20);
+                // ctx.fillText(timePeriod, 10, 40);
+                // ctx.fillText(gender, 10, 60);
+                // debugger;
 
-                ctx.drawImage(genChart.data, 10, 80);
-
-                
-                var imgTag = document.createElement('img');
-                imgTag.src = cnvs.toDataURL();
-                div.appendChild(imgTag);
-                
-                
+                // ctx.drawImage(genChart.data, 10, 80);
+                // var imgTag = document.createElement('img');
+                // imgTag.src = cnvs.toDataURL();
             }
         });
 
