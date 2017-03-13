@@ -327,18 +327,21 @@ Repository.Local.Methods.initialize({
                 key: 'size'
             };
 
-            var width = config.width;
+            var width = dataCellWidth * len + config.padLeft;
             var tblTop = config.height + config.vOffset;
             var tblHeight = 22;
 
             ctx.beginPath();
+            // move to left top corner
             ctx.moveTo(0, tblTop);
-            ctx.lineTo(config.width, tblTop);
-            ctx.moveTo(config.width, tblTop + tblHeight);
+            // draw to right top corner
+            ctx.lineTo(width, tblTop);
+            // move to right bottom corner
+            ctx.moveTo(width, tblTop + tblHeight);
+            // draw to left bottom corner
             ctx.lineTo(0, tblTop + tblHeight);
-            //debugger;
-            // ctx.moveTo(config.padLeft, tblTop);
-            // ctx.lineTo(config.padLeft,tblTop + tblHeight);
+            // draw to left top corner
+            ctx.lineTo(0, tblTop);
 
             for (var i = 0; i < len + 1; i++) {
                 var yCord = config.padLeft + dataCellWidth * i;
@@ -353,35 +356,15 @@ Repository.Local.Methods.initialize({
             ctx.fillText(keys.title, 2, txtbtmXCord);
 
             for (var i = 0; i < len; i++) {
-                var yCord = config.padLeft + (dataCellWidth * i) + dataCellWidth /2 +2;
+                
                 var value = config.data.items[i].get(keys.key);
+                var textHalfWdth = ctx.measureText && ctx.measureText(value).width /2 || 0;
+                var yCord = (config.padLeft + (dataCellWidth * i) + dataCellWidth /2) - textHalfWdth;
+                // debugger;
+
                 ctx.fillText(value,yCord, txtbtmXCord);
                 
             }
-
-            // for (var i = 0; i < rows; i++) {
-            //     var tr = document.createElement('tr');
-            //     for (var j = -1; j < len; j++) {
-            //         var td = document.createElement('td');
-            //         td.style.padding = '2px';
-            //         if (j === -1) {
-            //             td.innerText = keys[i].title;
-            //             td.style.width = titleWidth + 'px';
-            //             td.style.fontSize = '11px';
-            //         } else {
-            //             td.innerText = data.items[j].get(keys[i].key);
-            //             td.style.width = dataCellWidth + 'px';
-            //             td.style.borderLeft = '1px';
-            //             td.style.textAlign = 'center';
-            //             td.style.fontSize = '13px';
-            //         }
-            //         tr.appendChild(td);
-            //     }
-            //     var rightEndTD = document.createElement('td');
-            //     rightEndTD.style.width = rightWidth + 'px';
-            //     tr.appendChild(rightEndTD);
-            //     table.appendChild(tr);
-            // }
         };
 
         getPicBtn = Ext.create('Ext.Button', {
@@ -426,9 +409,9 @@ Repository.Local.Methods.initialize({
                     _m.mapGenderCodeToName(Repository.Local.current.gender);
 
                 // Add the text Items
-                // ctx.fillText(indicatorText, 10, 22);
-                // ctx.fillText(timePeriod, 10, 44);
-                // ctx.fillText(gender, 10, 66);
+                ctx.fillText(indicatorText, 10, 22);
+                ctx.fillText(timePeriod, 10, 44);
+                ctx.fillText(gender, 10, 66);
 
                 // add the chart
                 ctx.drawImage(chartAsImg.data, 0, 70);
@@ -438,7 +421,7 @@ Repository.Local.Methods.initialize({
                     data: data,
                     height: chartHeight,
                     width: chartWidth,
-                    vOffset: 70,
+                    vOffset: 40,
                     padLeft: chartLeftWidth,
                     padRight: chartRightwidth
                 });
