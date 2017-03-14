@@ -197,7 +197,7 @@ Repository.Local.Methods.initialize({
             ]
         });
 
-        widget._chart = Ext.widget('chart', {
+        widget._chart = Ext.widget('exportChart', {
             width: '100%',
             height: 400,
             border: true,
@@ -327,33 +327,33 @@ Repository.Local.Methods.initialize({
                 key: 'size'
             };
 
-            var width = dataCellWidth * len + config.padLeft;
+            var width = dataCellWidth * len + config.padLeft +5;
             var tblTop = config.height + config.vOffset;
             var tblHeight = 22;
 
             ctx.beginPath();
             // move to left top corner
-            ctx.moveTo(0, tblTop);
+            ctx.moveTo(2, tblTop);
             // draw to right top corner
             ctx.lineTo(width, tblTop);
             // move to right bottom corner
             ctx.moveTo(width, tblTop + tblHeight);
             // draw to left bottom corner
-            ctx.lineTo(0, tblTop + tblHeight);
+            ctx.lineTo(2, tblTop + tblHeight);
             // draw to left top corner
-            ctx.lineTo(0, tblTop);
+            ctx.lineTo(2, tblTop);
 
             for (var i = 0; i < len + 1; i++) {
                 var yCord = config.padLeft + dataCellWidth * i;
-                ctx.moveTo(yCord, tblTop);
-                ctx.lineTo(yCord, tblTop + tblHeight);
+                ctx.moveTo(yCord +5, tblTop);
+                ctx.lineTo(yCord +5, tblTop + tblHeight);
             }
             ctx.closePath();
             ctx.stroke();
 
-            ctx.font = '9px cartogothic_stdregular,open_sans,helvetica,arial,sans-serif';
+            ctx.font = '10px cartogothic_stdregular,open_sans,helvetica,arial,sans-serif';
             var txtbtmXCord = tblTop + (tblHeight/2) +3;
-            ctx.fillText(keys.title, 2, txtbtmXCord);
+            ctx.fillText(keys.title, 4, txtbtmXCord);
 
             for (var i = 0; i < len; i++) {
                 
@@ -362,7 +362,7 @@ Repository.Local.Methods.initialize({
                 var yCord = (config.padLeft + (dataCellWidth * i) + dataCellWidth /2) - textHalfWdth;
                 // debugger;
 
-                ctx.fillText(value,yCord, txtbtmXCord);
+                ctx.fillText(value,yCord +5, txtbtmXCord);
                 
             }
         };
@@ -377,8 +377,17 @@ Repository.Local.Methods.initialize({
                     chartHeight = chart.getHeight(),
                     chartWidth = chart.getWidth();
                 var chartAsImg = chart.getImage('image');
+                var imgData = chart.generatePicture({
+                    padding: 10,
+                    fonts:{
+                        medium: {
+                            size: '9px'
+                        }
+                    }
+                });
 
                 var data = store.getData();
+                
                 var chartLeftWidth = chart.insetPadding.left +
                     chart
                         .getAxes()
@@ -391,12 +400,14 @@ Repository.Local.Methods.initialize({
 
                 // Setup the canvas
                 var cnvs = document.createElement('canvas');
-                cnvs.width = chartWidth;
-                cnvs.height = chartHeight + 200;
+                cnvs.width = chartWidth + 10;
+                cnvs.height = chartHeight + 100;
                 // Setup the canvas context
                 var ctx = cnvs.getContext('2d');
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0,0, chartWidth +10, chartHeight + 100);
                 ctx.font = '16px cartogothic_stdregular,open_sans,helvetica,arial,sans-serif';
-
+                ctx.fillStyle = 'black';
                 // Get the text Items
                 var indicatorText = 'Indicator: ' +
                     _m.mapTitleCodeToName(Repository.Local.current.indicator);
@@ -409,18 +420,18 @@ Repository.Local.Methods.initialize({
                     _m.mapGenderCodeToName(Repository.Local.current.gender);
 
                 // Add the text Items
-                ctx.fillText(indicatorText, 10, 22);
-                ctx.fillText(timePeriod, 10, 44);
-                ctx.fillText(gender, 10, 66);
+                ctx.fillText(indicatorText, 15, 22);
+                ctx.fillText(timePeriod, 15, 44);
+                ctx.fillText(gender, 15, 66);
 
                 // add the chart
-                ctx.drawImage(chartAsImg.data, 0, 70);
+                ctx.drawImage(chartAsImg.data, 5, 70);
                 // debugger;
 
                 makeTable(ctx, {
                     data: data,
                     height: chartHeight,
-                    width: chartWidth,
+                    width: chartWidth +10,
                     vOffset: 40,
                     padLeft: chartLeftWidth,
                     padRight: chartRightwidth
@@ -428,8 +439,15 @@ Repository.Local.Methods.initialize({
 
                 // for dev time at to a image tag and display..
                 var imgTag = document.createElement('img');
-                imgTag.src = cnvs.toDataURL();
-
+                var dataUrl = cnvs.toDataURL();
+                imgTag.src = dataUrl;
+                var a = document.createElement('a');
+                a.setAttribute('href', dataUrl);
+                a.setAttribute('download', 'test.png');
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                // a.click();
+                document.body.removeChild(a);
                 div.appendChild(imgTag);
             }
         });
