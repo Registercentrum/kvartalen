@@ -716,6 +716,7 @@ window.Stratum.SID = {
 
                         console.log('generating', arguments, fontConfig);
                     },
+                    
                     alias: 'widget.exportChart',
                     extend: 'Ext.chart.Chart',
                     constructor: function(config) {
