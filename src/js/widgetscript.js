@@ -683,14 +683,40 @@ window.Stratum.SID = {
                                 0
                             );
                 }
-                var defaultFonts = {
-                    large: {
+                
+                var defualtConfig = {
+                    padding: 10,
+                    fonts: {
+                        header: {
                         size: '16px',
                         family: 'cartogothic_stdregular,open_sans,helvetica,arial,sans-serif'
                     },
-                    medium: {
+                    footer: {
                         size: '10px',
                         family: 'cartogothic_stdregular,open_sans,helvetica,arial,sans-serif'
+                    }},
+                    header: {
+                        height: 0,                        
+                    },
+                    footer: {
+                        height: 0
+                    }
+                };
+                function compositeFont(fontConfig) {
+                    return fontConfig.size + ' ' + fontConfig.family;
+                }
+                function drawSection(ctx, config, type , dimensions) {
+                    var section = config[type];
+                    ctx.font = compositeFont(config.fonts[type]);
+                    ctx.fillStyle = config.foreColor || 'black';
+                    var lineHeight = +config.fonts[type].size.match(/(\d+)/)[0]+2;
+                    if(section.items && Array.isArray(section.items) && section.items.length) {
+                        section.items.forEach(function(item, index) {
+                            ctx.fillText(item, config.padding, lineHeight * (index+1) +config.padding);
+                        });
+                    }
+                    if(typeof section.renderer === 'function') {
+                        section.renderer(ctx, dimensions);
                     }
                 };
                 return {
@@ -702,21 +728,33 @@ window.Stratum.SID = {
                             chartLeftWidth = getChartSideGap(chart, 'left'),
                             chartRighWidth = getChartSideGap(chart, 'right'),
                             cnvs = document.createElement('canvas');
-                        var fontConfig = Ext.merge({}, defaultFonts, config.fonts || {});
+                        config = Ext.merge({}, defualtConfig, config || {});
+                        var fontConfig = config.fonts;
+
                         var pictureWidth = chartWidth + config.padding;
-                        var pictureHeight = chartHeight + 100; // we shall calculate this based on the config.
+                        var pictureHeight = chartHeight + config.header.height + config.footer.height; // we shall calculate this based on the config.
 
                         cnvs.width = pictureWidth;
                         cnvs.height = pictureHeight;
 
                         var ctx = cnvs.getContext('2d');
                         ctx.fillStyle = config.backkColor || 'white';
-                        ctx.fillRect(0, 0, chartWidth + 10, chartHeight + 100);
-                        ctx.fillStyle = config.foreColor || 'black';
+                        ctx.fillRect(0, 0, pictureWidth, pictureHeight);                        
 
+                        ctx.drawImage(chartImage.data, config.padding / 2, config.header.height);
+
+                        drawSection(ctx, config, 'header');
+                        drawSection(ctx, config, 'footer', {
+                            height: chartHeight,
+                            width: pictureWidth,
+                            padLeft: chartLeftWidth,
+                            padRight: chartRighWidth,
+                            vOffset: 40
+                        });
                         console.log('generating', arguments, fontConfig);
+                        return cnvs.toDataURL();
                     },
-                    
+
                     alias: 'widget.exportChart',
                     extend: 'Ext.chart.Chart',
                     constructor: function(config) {

@@ -316,8 +316,8 @@ Repository.Local.Methods.initialize({
             ]
         });
 
-        makeTable = function makeTable(ctx, config) {
-            var len = config.data.length;
+        makeTable = function makeTable(ctx, config, data) {
+            var len = data.length;
             var dataCellWidth = (config.width -
                 config.padLeft -
                 config.padRight) /
@@ -327,7 +327,7 @@ Repository.Local.Methods.initialize({
                 key: 'size'
             };
 
-            var width = dataCellWidth * len + config.padLeft +5;
+            var width = dataCellWidth * len + config.padLeft + 5;
             var tblTop = config.height + config.vOffset;
             var tblHeight = 22;
 
@@ -345,25 +345,27 @@ Repository.Local.Methods.initialize({
 
             for (var i = 0; i < len + 1; i++) {
                 var yCord = config.padLeft + dataCellWidth * i;
-                ctx.moveTo(yCord +5, tblTop);
-                ctx.lineTo(yCord +5, tblTop + tblHeight);
+                ctx.moveTo(yCord + 5, tblTop);
+                ctx.lineTo(yCord + 5, tblTop + tblHeight);
             }
             ctx.closePath();
             ctx.stroke();
 
             ctx.font = '10px cartogothic_stdregular,open_sans,helvetica,arial,sans-serif';
-            var txtbtmXCord = tblTop + (tblHeight/2) +3;
+            var txtbtmXCord = tblTop + tblHeight / 2 + 3;
             ctx.fillText(keys.title, 4, txtbtmXCord);
 
             for (var i = 0; i < len; i++) {
-                
-                var value = config.data.items[i].get(keys.key);
-                var textHalfWdth = ctx.measureText && ctx.measureText(value).width /2 || 0;
-                var yCord = (config.padLeft + (dataCellWidth * i) + dataCellWidth /2) - textHalfWdth;
-                // debugger;
+                var value = data.items[i].get(keys.key);
+                var textHalfWdth = ctx.measureText &&
+                    ctx.measureText(value).width / 2 ||
+                    0;                    
+                var yCord = config.padLeft +
+                    dataCellWidth * i +
+                    dataCellWidth / 2 -
+                    textHalfWdth;
 
-                ctx.fillText(value,yCord +5, txtbtmXCord);
-                
+                ctx.fillText(value, yCord + 5, txtbtmXCord);
             }
         };
 
@@ -371,43 +373,9 @@ Repository.Local.Methods.initialize({
             text: 'Hämta Bild',
             handler: function() {
                 var div = document.getElementById('tmp');
+                var chart = widget._chart;
+                var data = chart.getStore().getData();
 
-                var chart = widget._chart,
-                    store = chart.getStore(),
-                    chartHeight = chart.getHeight(),
-                    chartWidth = chart.getWidth();
-                var chartAsImg = chart.getImage('image');
-                var imgData = chart.generatePicture({
-                    padding: 10,
-                    fonts:{
-                        medium: {
-                            size: '9px'
-                        }
-                    }
-                });
-
-                var data = store.getData();
-                
-                var chartLeftWidth = chart.insetPadding.left +
-                    chart
-                        .getAxes()
-                        .filter(function(ax) {
-                            return ax.getPosition() === 'left';
-                        })
-                        [0].getThickness();
-                var chartRightwidth = chart.insetPadding.right;
-                // debugger;
-
-                // Setup the canvas
-                var cnvs = document.createElement('canvas');
-                cnvs.width = chartWidth + 10;
-                cnvs.height = chartHeight + 100;
-                // Setup the canvas context
-                var ctx = cnvs.getContext('2d');
-                ctx.fillStyle = 'white';
-                ctx.fillRect(0,0, chartWidth +10, chartHeight + 100);
-                ctx.font = '16px cartogothic_stdregular,open_sans,helvetica,arial,sans-serif';
-                ctx.fillStyle = 'black';
                 // Get the text Items
                 var indicatorText = 'Indicator: ' +
                     _m.mapTitleCodeToName(Repository.Local.current.indicator);
@@ -419,27 +387,26 @@ Repository.Local.Methods.initialize({
                 var gender = 'Kön: ' +
                     _m.mapGenderCodeToName(Repository.Local.current.gender);
 
-                // Add the text Items
-                ctx.fillText(indicatorText, 15, 22);
-                ctx.fillText(timePeriod, 15, 44);
-                ctx.fillText(gender, 15, 66);
-
-                // add the chart
-                ctx.drawImage(chartAsImg.data, 5, 70);
-                // debugger;
-
-                makeTable(ctx, {
-                    data: data,
-                    height: chartHeight,
-                    width: chartWidth +10,
-                    vOffset: 40,
-                    padLeft: chartLeftWidth,
-                    padRight: chartRightwidth
+                var dataUrl = chart.generatePicture({
+                    padding: 10,
+                    fonts: {
+                        footer: {
+                            size: '9px'
+                        }
+                    },
+                    header: {
+                        height: 22 * 3,
+                        items: [indicatorText, timePeriod, gender]
+                    },
+                    footer: {
+                        height: 40,
+                        renderer: function(ctx, dimensions) {
+                            makeTable(ctx, dimensions,data);
+                        }
+                    }
                 });
-
-                // for dev time at to a image tag and display..
                 var imgTag = document.createElement('img');
-                var dataUrl = cnvs.toDataURL();
+                
                 imgTag.src = dataUrl;
                 var a = document.createElement('a');
                 a.setAttribute('href', dataUrl);
