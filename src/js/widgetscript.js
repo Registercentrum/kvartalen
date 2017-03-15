@@ -237,6 +237,7 @@ window.Stratum.SID = {
                     }
                 );
             }
+
             function sortByValueName(a, b) {
                 return a.valueName.localeCompare(b.valueName);
             }
@@ -665,6 +666,7 @@ window.Stratum.SID = {
     },
     initializeClasses: function() {
         var EXPORT_CHART_NAME = 'RC.ui.ExportChart';
+        // this class is a rogh implmentation and should be improved upon.
         !Ext.ClassManager.isCreated(EXPORT_CHART_NAME) &&
             Ext.define(EXPORT_CHART_NAME, function() {
                 function getChartSideGap(chart, side) {
@@ -683,42 +685,127 @@ window.Stratum.SID = {
                                 0
                             );
                 }
-                
-                var defualtConfig = {
+
+                var defaultConfig = {
                     padding: 10,
-                    fonts: {
-                        header: {
-                        size: '16px',
-                        family: 'cartogothic_stdregular,open_sans,helvetica,arial,sans-serif'
-                    },
-                    footer: {
-                        size: '10px',
-                        family: 'cartogothic_stdregular,open_sans,helvetica,arial,sans-serif'
-                    }},
                     header: {
-                        height: 0,                        
+                        font: {
+                            size: '16px',
+                            family: 'cartogothic_stdregular,open_sans,helvetica,arial,sans-serif'
+                        },
+                        height: 0
+                    },
+                    table: {
+                        height: 0,
+                        font: {
+                            size: '10px',
+                            family: 'cartogothic_stdregular,open_sans,helvetica,arial,sans-serif'
+                        }
                     },
                     footer: {
-                        height: 0
+                        height: 0,
+                        font: {
+                            size: '10px',
+                            family: 'cartogothic_stdregular,open_sans,helvetica,arial,sans-serif'
+                        }
                     }
                 };
+
                 function compositeFont(fontConfig) {
                     return fontConfig.size + ' ' + fontConfig.family;
                 }
-                function drawSection(ctx, config, type , dimensions) {
+
+                function defaultTableRenderer(ctx, config, keys, data) {
+                    var len = data.length;
+                    var dataCellWidth = (config.width -
+                        config.padLeft -
+                        config.padRight -
+                        config.padding *2) /
+                        len;
+
+                    var width = dataCellWidth * len +
+                        config.padLeft +
+                        config.padding;
+                    
+                    var leftEdge = Math.floor(config.padding /2);
+                    // debugger;
+                    var tblTop = config.height;
+                    var tblHeight = 22;
+                    for (var k = 0; k < keys.length; k++) {
+                        
+                        ctx.beginPath();
+                        // move to left top corner
+                        ctx.moveTo(leftEdge, tblTop);
+                        // draw to right top corner
+                        ctx.lineTo(width, tblTop);
+                        // move to right bottom corner
+                        ctx.moveTo(width, tblTop + tblHeight);
+                        // draw to left bottom corner
+                        ctx.lineTo(leftEdge, tblTop + tblHeight);
+                        // draw to left top corner
+                        ctx.lineTo(leftEdge, tblTop);
+
+                        for (var i = 0; i < len + 1; i++) {
+                            var yCord = config.padLeft + dataCellWidth * i;
+                            ctx.moveTo(yCord + 5, tblTop);
+                            ctx.lineTo(yCord + 5, tblTop + tblHeight);
+                        }
+                        ctx.closePath();
+                        ctx.stroke();
+
+                        // ctx.font = '10px cartogothic_stdregular,open_sans,helvetica,arial,sans-serif';
+                        var txtbtmXCord = tblTop + tblHeight / 2 + 3;
+                        ctx.fillText(keys[k].title, 4, txtbtmXCord);
+
+                        for (var i = 0; i < len; i++) {
+
+                            var value = keys[k].key ? data.items[i].get(keys[k].key): '';
+                            var textHalfWdth = ctx.measureText &&
+                                ctx.measureText(value).width / 2 ||
+                                0;
+                            var yCord = config.padLeft +
+                                dataCellWidth * i +
+                                dataCellWidth / 2 -
+                                textHalfWdth;
+
+                            ctx.fillText(value, yCord + config.padding, txtbtmXCord);
+                        }
+                        tblTop = tblTop + tblHeight;
+                    }
+                }
+
+                function drawSection(ctx, config, type, dimensions, chart) {
                     var section = config[type];
-                    ctx.font = compositeFont(config.fonts[type]);
+                    ctx.font = compositeFont(section.font);
                     ctx.fillStyle = config.foreColor || 'black';
-                    var lineHeight = +config.fonts[type].size.match(/(\d+)/)[0]+2;
-                    if(section.items && Array.isArray(section.items) && section.items.length) {
+                    // get the font size without the 'px|pt' and add 2 pixels for lineheight 
+                    var lineHeight = +section.font.size.match(/(\d+)/)[0] + 2;
+                    if (
+                        section.items &&
+                        Array.isArray(section.items) &&
+                        section.items.length
+                    ) {
                         section.items.forEach(function(item, index) {
-                            ctx.fillText(item, config.padding, lineHeight * (index+1) +config.padding);
+                            ctx.fillText(
+                                item,
+                                config.padding,
+                                lineHeight * (index + 1) + config.padding
+                            );
                         });
                     }
-                    if(typeof section.renderer === 'function') {
+                    if (typeof section.renderer === 'function') {
                         section.renderer(ctx, dimensions);
                     }
-                };
+                    if (type == 'table' && section.keys) {
+                        defaultTableRenderer(
+                            ctx,
+                            dimensions,
+                            section.keys,
+                            chart.getStore().getData()
+                        );
+                    }
+                }
+
                 return {
                     generatePicture: function(config) {
                         var chart = this,
@@ -727,31 +814,43 @@ window.Stratum.SID = {
                             chartImage = chart.getImage('image'),
                             chartLeftWidth = getChartSideGap(chart, 'left'),
                             chartRighWidth = getChartSideGap(chart, 'right'),
+                            chartBottomHeight = getChartSideGap(chart, 'bottom');
                             cnvs = document.createElement('canvas');
-                        config = Ext.merge({}, defualtConfig, config || {});
-                        var fontConfig = config.fonts;
+                        config = Ext.merge({}, defaultConfig, config || {});
 
                         var pictureWidth = chartWidth + config.padding;
-                        var pictureHeight = chartHeight + config.header.height + config.footer.height; // we shall calculate this based on the config.
+                        var pictureHeight = chartHeight +
+                            config.header.height +
+                            config.table.height +
+                            config.footer.height; // we shall calculate this based on the config.
 
                         cnvs.width = pictureWidth;
                         cnvs.height = pictureHeight;
 
                         var ctx = cnvs.getContext('2d');
                         ctx.fillStyle = config.backkColor || 'white';
-                        ctx.fillRect(0, 0, pictureWidth, pictureHeight);                        
+                        ctx.fillRect(0, 0, pictureWidth, pictureHeight);
 
-                        ctx.drawImage(chartImage.data, config.padding / 2, config.header.height);
+                        ctx.drawImage(
+                            chartImage.data,
+                            config.padding / 2,
+                            config.header.height
+                        );
 
                         drawSection(ctx, config, 'header');
-                        drawSection(ctx, config, 'footer', {
-                            height: chartHeight,
-                            width: pictureWidth,
-                            padLeft: chartLeftWidth,
-                            padRight: chartRighWidth,
-                            vOffset: 40
-                        });
-                        console.log('generating', arguments, fontConfig);
+                        drawSection(
+                            ctx,
+                            config,
+                            'table',
+                            {
+                                height: chartHeight + config.header.height,
+                                width: pictureWidth,
+                                padLeft: chartLeftWidth,
+                                padRight: chartRighWidth,
+                                padding: config.padding / 2
+                            },
+                            this
+                        );
                         return cnvs.toDataURL();
                     },
 

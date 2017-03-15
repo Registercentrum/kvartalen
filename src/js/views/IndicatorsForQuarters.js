@@ -206,6 +206,128 @@ Repository.Local.Methods.initialize({
             )
         };
 
+Ext.create('Ext.data.Store', {
+            storeId: 'QuarterlyIndicatorStore',
+            model: 'QuarterlyIndicatorModel',
+            data: widget.getQuarterlyValues()
+        });
+
+        widget._chart = Ext.widget('exportChart', {
+            width: '100%',
+            height: 400,
+            layout: 'fit',
+            border: true,
+            animation: true,
+            padding: '8px 0',
+            animate: true,
+            store: Ext.data.StoreManager.lookup('QuarterlyIndicatorStore'),
+            insetPadding: {
+                top: 25,
+                right: 20,
+                bottom: 20,
+                left: 20
+            },
+            listeners: {
+                redraw: function (chart) {
+                    try {
+                        if (!chart._lastInnerRect || chart.innerRect[3] !== chart._lastInnerRect[3]) {
+                            _m.drawLimitRectangles(chart);
+                        }
+                        chart._lastInnerRect = chart.innerRect;
+                    } catch (e) {
+                        console.error(e);
+                    }
+                }
+            },
+            axes: [{
+                type: 'numeric',
+                position: 'left',
+                minimum: 0,
+                maximum: 100,
+                grid: true,
+                renderer: function (v) {
+                    return v + '%';
+                }
+            }, {
+                type: 'category',
+                position: 'bottom'
+            }],
+            series: [{
+                type: 'bar',
+                axis: 'left',
+                highlight: {
+                    strokeStyle: '#288CA2',
+                    fillStyle: '#3CB6CE',
+                    stroke: 'none',
+                    opacity: 0.5,
+                    cursor: 'pointer'
+                },
+                subStyle: {
+                    strokeStyle: '#288CA2',
+                    fillStyle: '#3CB6CE',
+                    border: false
+                },
+                tips: {
+                    trackMouse: true,
+                    dismissDelay: 0,
+                    renderer: function (s) {
+                        if (!s) {
+                            return;
+                        }
+                        this.update(Ext.String.format(s.get('size') ? '{0}<br/>{1} observationer.<br/>{2}. Konfidensintervall &plusmn;{3}.' : '{0}<br/>{1} observationer.',
+                            _m.mapHospitalCodeToName(s.get('hospital')),
+                            s.get('size'),
+                            Ext.util.Format.number(s.get('measure'), '0.0%'),
+                            Ext.util.Format.number(s.get('deviation'), '0.0%')));
+                    }
+                },
+                renderer: _m.kvartalenChartRenderer({
+                    measure: 'deviation'
+                }),
+                xField: 'name',
+                yField: 'measure'
+            }]
+        });
+
+var downloadPicBtn = Ext.create('Ext.Button', {
+            text: 'Hämta Bild',
+            handler: function () {
+                var chart = widget._chart;
+
+                var indicatorText = 'Indikator: ' +
+                    _m.mapTitleCodeToName(Repository.Local.current.indicator);
+                var indicatorSubText = '                '+ _m.mapIndicatorCodeToName(Repository.Local.current.indicator);
+                var timePeriod = 'Tidsperiod: ' +
+                    _m.mapPeriodCodeToName(Repository.Local.current.period) + ' (' + Repository.Local.current.yearOfPeriod + ')';
+                var gender = 'Kön: ' + _m.mapGenderCodeToName(Repository.Local.current.gender);
+
+                var dataUrl = chart.generatePicture({
+                    padding: 10,
+                    header: {
+                        height: 22 * 4,
+                        items: [indicatorText,indicatorSubText, timePeriod, gender]
+                    },
+                    table: {
+                        height: 30,
+                        font: {
+                            size: '9px'
+                        },
+                        keys: [{
+                            title: 'Observationer',
+                            key: 'size'
+                        }]
+                    }
+                });
+                var a = document.createElement('a');
+                a.setAttribute('href', dataUrl);
+                a.setAttribute('download', 'test.png');
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+        });
+
         Ext.create('Ext.panel.Panel', {
             renderTo: 'QuarterlyIndicatorContainer',
             width: '100%',
@@ -370,91 +492,10 @@ Repository.Local.Methods.initialize({
                         widget.dropdownRefresh(this, _m);
                     }
                 }
-            }]
+            }, widget._chart,downloadPicBtn]
         });
 
-        Ext.create('Ext.data.Store', {
-            storeId: 'QuarterlyIndicatorStore',
-            model: 'QuarterlyIndicatorModel',
-            data: widget.getQuarterlyValues()
-        });
-
-        widget._chart = Ext.widget('chart', {
-            renderTo: 'QuarterlyIndicatorContainer',
-            width: '100%',
-            height: 400,
-            layout: 'fit',
-            border: true,
-            animation: true,
-            animate: true,
-            store: Ext.data.StoreManager.lookup('QuarterlyIndicatorStore'),
-            insetPadding: {
-                top: 25,
-                right: 20,
-                bottom: 20,
-                left: 20
-            },
-            listeners: {
-                redraw: function (chart) {
-                    try {
-                        if (!chart._lastInnerRect || chart.innerRect[3] !== chart._lastInnerRect[3]) {
-                            _m.drawLimitRectangles(chart);
-                        }
-                        chart._lastInnerRect = chart.innerRect;
-                    } catch (e) {
-                        console.error(e);
-                    }
-                }
-            },
-            axes: [{
-                type: 'numeric',
-                position: 'left',
-                minimum: 0,
-                maximum: 100,
-                grid: true,
-                renderer: function (v) {
-                    return v + '%';
-                }
-            }, {
-                type: 'category',
-                position: 'bottom'
-            }],
-            series: [{
-                type: 'bar',
-                axis: 'left',
-                highlight: {
-                    strokeStyle: '#288CA2',
-                    fillStyle: '#3CB6CE',
-                    stroke: 'none',
-                    opacity: 0.5,
-                    cursor: 'pointer'
-                },
-                subStyle: {
-                    strokeStyle: '#288CA2',
-                    fillStyle: '#3CB6CE',
-                    border: false
-                },
-                tips: {
-                    trackMouse: true,
-                    dismissDelay: 0,
-                    renderer: function (s) {
-                        if (!s) {
-                            return;
-                        }
-                        this.update(Ext.String.format(s.get('size') ? '{0}<br/>{1} observationer.<br/>{2}. Konfidensintervall &plusmn;{3}.' : '{0}<br/>{1} observationer.',
-                            _m.mapHospitalCodeToName(s.get('hospital')),
-                            s.get('size'),
-                            Ext.util.Format.number(s.get('measure'), '0.0%'),
-                            Ext.util.Format.number(s.get('deviation'), '0.0%')));
-                    }
-                },
-                renderer: _m.kvartalenChartRenderer({
-                    measure: 'deviation'
-                }),
-                xField: 'name',
-                yField: 'measure'
-            }]
-        });
+        
     }
 });
 

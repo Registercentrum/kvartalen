@@ -173,6 +173,153 @@ Repository.Local.Methods.initialize({
             }]
         });
         Ext.fly('HospitalIndicatorContainer').unmask();
+
+         Ext.create('Ext.data.Store', {
+            storeId: 'HospitalIndicatorStore',
+            model: 'HospitalIndicatorModel',
+            data: widget.getHospitalValues(),
+            sorters: [{
+                property: 'name',
+                direction: 'ASC'
+            }]
+        });
+
+        widget._chart = Ext.widget('exportChart', {
+            renderTo: 'HospitalIndicatorContainer',
+            width: '100%',
+            height: 400,
+            padding: '8px 0',
+            layout: 'fit',
+            border: true,
+            plugins: {
+                ptype: 'chartitemevents'
+            },
+            animation: true,
+            animate: true,
+            store: Ext.data.StoreManager.lookup('HospitalIndicatorStore'),
+            insetPadding: {
+                top: 25,
+                right: 20,
+                bottom: 20,
+                left: 20
+            },
+            limitConfig: {
+                getLimitsFromStore: true,
+                limitAboveField: 'limitAbove',
+                limitBelowField: 'limitBelow'
+            },
+            listeners: {
+                // TODO: Bug in ExtJS where limit rectangles
+                redraw: function(chart, ev) {
+                    try {
+                        if (!chart._lastInnerRect || chart.innerRect[3] !== chart._lastInnerRect[3]) {
+                            _m.drawLimitRectangles(chart);
+                        }
+                        chart._lastInnerRect = chart.innerRect;
+                    } catch (e) {}
+                }
+            },
+            axes: [{
+                type: 'numeric',
+                position: 'left',
+                minimum: 0,
+                maximum: 100,
+                grid: true,
+                renderer: function(v) {
+                    return v + '%';
+                }
+            }, {
+                type: 'category',
+                position: 'bottom',
+                label: {
+                    fontSize: 11
+                },
+                title: 'Sjukhus i förvaltningen'
+            }],
+            series: [{
+                type: 'bar',
+                axis: 'left',
+                highlight: {
+                    strokeStyle: '#288CA2',
+                    fillStyle: '#3CB6CE',
+                    stroke: 'none',
+                    opacity: 0.5,
+                    cursor: 'pointer'
+                },
+                subStyle: {
+                    strokeStyle: '#288CA2',
+                    fillStyle: '#3CB6CE',
+                    border: false
+                },
+                tips: {
+                    trackMouse: true,
+                    dismissDelay: 0,
+                    renderer: function(s) {
+                        if (!s) {
+                            return;
+                        }
+                        this.update(Ext.String.format(s.get('size') ? '{0}<br/>{1} observationer.<br/>{2}. Konfidensintervall &plusmn;{3}.' : '{0}<br/>{1} observationer.',
+                            _m.mapHospitalCodeToName(s.get('hospital')),
+                            s.get('size'),
+                            Ext.util.Format.number(s.get('measure'), '0.0%'),
+                            Ext.util.Format.number(s.get('deviation'), '0.0%')));
+                    }
+                },
+                renderer: _m.kvartalenChartRenderer({
+                    measure: 'deviation'
+                }),
+                listeners: {
+                    itemmousedown: function(series, item) {
+                        Repository.Local.current.hospital = item.record.get('hospital');
+                        _m.navigateToPage(1322);
+                    }
+                },
+                xField: 'name',
+                yField: 'measure'
+            }]
+        });
+        
+        var downloadPicBtn = Ext.create('Ext.Button', {
+            text: 'Hämta Bild',
+            handler: function () {
+
+                var chart = widget._chart;
+
+                // Get the text Items                
+                var indicatorText = 'Indikator: ' +
+                    _m.mapTitleCodeToName(Repository.Local.current.indicator);
+                var indicatorSubText = '                '+ _m.mapIndicatorCodeToName(Repository.Local.current.indicator);
+                var timePeriod = 'Tidsperiod: ' +
+                    _m.mapPeriodCodeToName(Repository.Local.current.period) + ' (' + Repository.Local.current.yearOfPeriod + ')';
+                var gender = 'Kön: ' + _m.mapGenderCodeToName(Repository.Local.current.gender);
+
+                var dataUrl = chart.generatePicture({
+                    padding: 10,
+                    header: {
+                        height: 22 * 4,
+                        items: [indicatorText,indicatorSubText, timePeriod, gender]
+                    },
+                    table: {
+                        height: 30,
+                        font: {
+                            size: '10px'
+                        },
+                        keys: [{
+                            title: 'Observationer',
+                            key: 'size'
+                        }]
+                    }
+                });
+                var a = document.createElement('a');
+                a.setAttribute('href', dataUrl);
+                a.setAttribute('download', 'test.png');
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+        });
+
         // if (aMessage) {
         //TODO: inform user somehow that initialization has failed.
         // return;
@@ -343,111 +490,10 @@ Repository.Local.Methods.initialize({
                         widget.dropdownRefresh(aCombo, _m);
                     }
                 }
-            }]
+            },widget._chart,
+            downloadPicBtn]
         });
-        Ext.create('Ext.data.Store', {
-            storeId: 'HospitalIndicatorStore',
-            model: 'HospitalIndicatorModel',
-            data: widget.getHospitalValues(),
-            sorters: [{
-                property: 'name',
-                direction: 'ASC'
-            }]
-        });
-
-        widget._chart = Ext.widget('chart', {
-            renderTo: 'HospitalIndicatorContainer',
-            width: '100%',
-            height: 400,
-            layout: 'fit',
-            border: true,
-            plugins: {
-                ptype: 'chartitemevents'
-            },
-            animation: true,
-            animate: true,
-            store: Ext.data.StoreManager.lookup('HospitalIndicatorStore'),
-            insetPadding: {
-                top: 25,
-                right: 20,
-                bottom: 20,
-                left: 20
-            },
-            limitConfig: {
-                getLimitsFromStore: true,
-                limitAboveField: 'limitAbove',
-                limitBelowField: 'limitBelow'
-            },
-            listeners: {
-                // TODO: Bug in ExtJS where limit rectangles
-                redraw: function(chart, ev) {
-                    try {
-                        if (!chart._lastInnerRect || chart.innerRect[3] !== chart._lastInnerRect[3]) {
-                            _m.drawLimitRectangles(chart);
-                        }
-                        chart._lastInnerRect = chart.innerRect;
-                    } catch (e) {}
-                }
-            },
-            axes: [{
-                type: 'numeric',
-                position: 'left',
-                minimum: 0,
-                maximum: 100,
-                grid: true,
-                renderer: function(v) {
-                    return v + '%';
-                }
-            }, {
-                type: 'category',
-                position: 'bottom',
-                label: {
-                    fontSize: 11
-                },
-                title: 'Sjukhus i förvaltningen'
-            }],
-            series: [{
-                type: 'bar',
-                axis: 'left',
-                highlight: {
-                    strokeStyle: '#288CA2',
-                    fillStyle: '#3CB6CE',
-                    stroke: 'none',
-                    opacity: 0.5,
-                    cursor: 'pointer'
-                },
-                subStyle: {
-                    strokeStyle: '#288CA2',
-                    fillStyle: '#3CB6CE',
-                    border: false
-                },
-                tips: {
-                    trackMouse: true,
-                    dismissDelay: 0,
-                    renderer: function(s) {
-                        if (!s) {
-                            return;
-                        }
-                        this.update(Ext.String.format(s.get('size') ? '{0}<br/>{1} observationer.<br/>{2}. Konfidensintervall &plusmn;{3}.' : '{0}<br/>{1} observationer.',
-                            _m.mapHospitalCodeToName(s.get('hospital')),
-                            s.get('size'),
-                            Ext.util.Format.number(s.get('measure'), '0.0%'),
-                            Ext.util.Format.number(s.get('deviation'), '0.0%')));
-                    }
-                },
-                renderer: _m.kvartalenChartRenderer({
-                    measure: 'deviation'
-                }),
-                listeners: {
-                    itemmousedown: function(series, item) {
-                        Repository.Local.current.hospital = item.record.get('hospital');
-                        _m.navigateToPage(1322);
-                    }
-                },
-                xField: 'name',
-                yField: 'measure'
-            }]
-        });
+       
     }
 });
 

@@ -1,5 +1,5 @@
 Repository.Local.Methods.initialize({
-    initSampleSizes: function() {
+    initSampleSizes: function () {
         var db = Repository.Local.database,
             pc = Repository.Local.current.period,
             yc = Repository.Local.current.yearOfPeriod,
@@ -10,36 +10,34 @@ Repository.Local.Methods.initialize({
                 pcs: {},
                 ycs: {}
             };
-        Ext.Array.forEach(db.Indicators, function(rc) {
+        Ext.Array.forEach(db.Indicators, function (rc) {
             if (rc.Indicator === ic && rc.Administration.length === 5) {
                 if (yc === rc.YearOfPeriod && pc === rc.Period) {
-                    curr.gcs[rc.Gender] = curr.gcs[rc.Gender] ||
-                        {
-                            size: 0
-                        };
+                    curr.gcs[rc.Gender] = curr.gcs[rc.Gender] || {
+                        size: 0
+                    };
                     curr.gcs[rc.Gender].size += rc.Size;
                 }
                 if (rc.Gender === gc) {
                     if (yc === rc.YearOfPeriod) {
-                        curr.pcs[rc.Period] = curr.pcs[rc.Period] ||
-                            {
-                                size: 0
-                            };
+                        curr.pcs[rc.Period] = curr.pcs[rc.Period] || {
+                            size: 0
+                        };
                         curr.pcs[rc.Period].size += rc.Size;
                     }
                     if (pc === rc.Period) {
-                        curr.ycs[rc.YearOfPeriod] = curr.ycs[rc.YearOfPeriod] ||
-                            {
-                                size: 0
-                            };
+                        curr.ycs[rc.YearOfPeriod] = curr.ycs[rc.YearOfPeriod] || {
+                            size: 0
+                        };
                         curr.ycs[rc.YearOfPeriod].size += rc.Size;
                     }
                 }
             }
         });
     },
-    getSampleSizes: function(sorttype) {
-        var sortenum = Repository.Local.SORTTYPE, ret = {};
+    getSampleSizes: function (sorttype) {
+        var sortenum = Repository.Local.SORTTYPE,
+            ret = {};
         if (!Repository.Local.current.sizes) {
             return ret;
         }
@@ -61,7 +59,7 @@ Repository.Local.Methods.initialize({
         }
         return ret;
     },
-    getManagementValues: function() {
+    getManagementValues: function () {
         var db = Repository.Local.database,
             pc = Repository.Local.current.period,
             yc = Repository.Local.current.yearOfPeriod,
@@ -70,7 +68,7 @@ Repository.Local.Methods.initialize({
             tv = Repository.Local.Methods.getIndicatorTargets(ic),
             vc = [];
 
-        Ext.Array.forEach(db.Indicators, function(rc) {
+        Ext.Array.forEach(db.Indicators, function (rc) {
             if (
                 rc.Indicator === ic &&
                 rc.Period === pc &&
@@ -93,32 +91,32 @@ Repository.Local.Methods.initialize({
             }
         });
         this.initSampleSizes();
-        return vc.sort(function(a, b) {
+        return vc.sort(function (a, b) {
             return b.name.localeCompare(a.name);
         });
     },
-    sizeRefresh: function(scope, sortType) {
+    sizeRefresh: function (scope, sortType) {
         var sizes = this.getSampleSizes(sortType);
-        scope.each(function(aRecord) {
-            aRecord.data.size = sizes[aRecord.data.valueCode]
-                ? sizes[aRecord.data.valueCode].size
-                : 0; // Add total sample size to each store record.
+        scope.each(function (aRecord) {
+            aRecord.data.size = sizes[aRecord.data.valueCode] ?
+                sizes[aRecord.data.valueCode].size :
+                0; // Add total sample size to each store record.
         });
     },
-    dropdownRefresh: function(scope, _m) {
+    dropdownRefresh: function (scope, _m) {
         var combos,
             store = Ext.data.StoreManager.lookup('ManagementIndicatorStore');
         store && store.loadData(this.getManagementValues());
         combos = scope.ownerCt.query('combo');
-        Ext.Array.each(combos, function(cc) {
+        Ext.Array.each(combos, function (cc) {
             !cc.isIndicatorCombo && cc.getStore().reload(); // Ensure that combo with itemTpl is reexecuted when combo list is opened.
         });
         _m.drawLimitRectangles(this._chart);
     },
-    preInit: function() {
+    preInit: function () {
         Ext.fly('ManagementIndicatorContainer').mask('Hämtar data ...');
     },
-    init: function(_m) {
+    init: function (_m) {
         var widget = this;
         Repository.Local.SORTTYPE = {
             Hospital: 0,
@@ -130,8 +128,7 @@ Repository.Local.Methods.initialize({
         typeof ManagementIndicatorModel === 'undefined' &&
             Ext.define('ManagementIndicatorModel', {
                 extend: 'Ext.data.Model',
-                fields: [
-                    {
+                fields: [{
                         name: 'name',
                         type: 'string',
                         useNull: true
@@ -172,13 +169,12 @@ Repository.Local.Methods.initialize({
             cls: 'WidgetListItem',
             itemTpl: Ext.create(
                 'Ext.XTemplate',
-                '<span class="WidgetListItemInner" style="{[this.getStyle(values)]}">{valueName}</span>',
-                {
-                    getStyle: function(aRecord) {
+                '<span class="WidgetListItemInner" style="{[this.getStyle(values)]}">{valueName}</span>', {
+                    getStyle: function (aRecord) {
                         return typeof aRecord.size === 'undefined' ||
-                            aRecord.size > 0
-                            ? ''
-                            : 'color: #999';
+                            aRecord.size > 0 ?
+                            '' :
+                            'color: #999';
                     }
                 }
             )
@@ -189,12 +185,10 @@ Repository.Local.Methods.initialize({
             storeId: 'ManagementIndicatorStore',
             model: 'ManagementIndicatorModel',
             data: widget.getManagementValues(),
-            sorters: [
-                {
-                    property: 'name',
-                    direction: 'ASC'
-                }
-            ]
+            sorters: [{
+                property: 'name',
+                direction: 'ASC'
+            }]
         });
 
         widget._chart = Ext.widget('exportChart', {
@@ -222,27 +216,24 @@ Repository.Local.Methods.initialize({
             },
             listeners: {
                 //Makes sure the rectangles are redrawn if the inner height has been changed in the chart surface
-                redraw: function(chart) {
+                redraw: function (chart) {
                     try {
-                        if (
-                            !chart._lastInnerRect ||
+                        if (!chart._lastInnerRect ||
                             chart.innerRect[3] !== chart._lastInnerRect[3]
                         ) {
                             _m.drawLimitRectangles(chart);
                         }
                         chart._lastInnerRect = chart.innerRect;
-                    } catch (e) {
-                    }
+                    } catch (e) {}
                 }
             },
-            axes: [
-                {
+            axes: [{
                     type: 'numeric',
                     position: 'left',
                     minimum: 0,
                     maximum: 100,
                     grid: true,
-                    renderer: function(v) {
+                    renderer: function (v) {
                         return v + '%';
                     }
                 },
@@ -255,159 +246,98 @@ Repository.Local.Methods.initialize({
                     title: 'Sjukhusförvaltningar'
                 }
             ],
-            series: [
-                {
-                    type: 'bar',
-                    axis: 'left',
-                    highlight: {
-                        strokeStyle: '#288CA2',
-                        fillStyle: '#3CB6CE',
-                        stroke: 'none',
-                        opacity: 0.5,
-                        cursor: 'pointer'
-                    },
-                    subStyle: {
-                        strokeStyle: '#288CA2',
-                        fillStyle: '#3CB6CE',
-                        border: false
-                    },
-                    tooltip: {
-                        trackMouse: true,
-                        dismissDelay: 0,
-                        renderer: function(s, item) {
-                            if (!s) {
-                                return;
-                            }
-                            this.update(
-                                Ext.String.format(
-                                    s.get('size')
-                                        ? '{0}<br/>{1} observationer.<br/>{2}. Konfidensintervall &plusmn;{3}.'
-                                        : '{0}<br/>{1} observationer.',
-                                    _m.mapManagementCodeToName(
-                                        s.get('management')
-                                    ),
-                                    s.get('size'),
-                                    Ext.util.Format.number(
-                                        s.get('measure'),
-                                        '0.0%'
-                                    ),
-                                    Ext.util.Format.number(
-                                        s.get('deviation'),
-                                        '0.0%'
-                                    )
+            series: [{
+                type: 'bar',
+                axis: 'left',
+                highlight: {
+                    strokeStyle: '#288CA2',
+                    fillStyle: '#3CB6CE',
+                    stroke: 'none',
+                    opacity: 0.5,
+                    cursor: 'pointer'
+                },
+                subStyle: {
+                    strokeStyle: '#288CA2',
+                    fillStyle: '#3CB6CE',
+                    border: false
+                },
+                tooltip: {
+                    trackMouse: true,
+                    dismissDelay: 0,
+                    renderer: function (s, item) {
+                        if (!s) {
+                            return;
+                        }
+                        this.update(
+                            Ext.String.format(
+                                s.get('size') ?
+                                '{0}<br/>{1} observationer.<br/>{2}. Konfidensintervall &plusmn;{3}.' :
+                                '{0}<br/>{1} observationer.',
+                                _m.mapManagementCodeToName(
+                                    s.get('management')
+                                ),
+                                s.get('size'),
+                                Ext.util.Format.number(
+                                    s.get('measure'),
+                                    '0.0%'
+                                ),
+                                Ext.util.Format.number(
+                                    s.get('deviation'),
+                                    '0.0%'
                                 )
-                            );
-                        }
-                    },
-                    renderer: _m.kvartalenChartRenderer({
-                        measure: 'deviation'
-                    }),
-                    listeners: {
-                        itemmousedown: function(series, item) {
-                            Repository.Local.current.management = item.record.get(
-                                'management'
-                            );
-                            _m.navigateToPage(1276);
-                        }
-                    },
-                    xField: 'name',
-                    yField: 'measure'
-                }
-            ]
+                            )
+                        );
+                    }
+                },
+                renderer: _m.kvartalenChartRenderer({
+                    measure: 'deviation'
+                }),
+                listeners: {
+                    itemmousedown: function (series, item) {
+                        Repository.Local.current.management = item.record.get(
+                            'management'
+                        );
+                        _m.navigateToPage(1276);
+                    }
+                },
+                xField: 'name',
+                yField: 'measure'
+            }]
         });
-
-        makeTable = function makeTable(ctx, config, data) {
-            var len = data.length;
-            var dataCellWidth = (config.width -
-                config.padLeft -
-                config.padRight) /
-                len;
-            var keys = {
-                title: 'Observationer',
-                key: 'size'
-            };
-
-            var width = dataCellWidth * len + config.padLeft + 5;
-            var tblTop = config.height + config.vOffset;
-            var tblHeight = 22;
-
-            ctx.beginPath();
-            // move to left top corner
-            ctx.moveTo(2, tblTop);
-            // draw to right top corner
-            ctx.lineTo(width, tblTop);
-            // move to right bottom corner
-            ctx.moveTo(width, tblTop + tblHeight);
-            // draw to left bottom corner
-            ctx.lineTo(2, tblTop + tblHeight);
-            // draw to left top corner
-            ctx.lineTo(2, tblTop);
-
-            for (var i = 0; i < len + 1; i++) {
-                var yCord = config.padLeft + dataCellWidth * i;
-                ctx.moveTo(yCord + 5, tblTop);
-                ctx.lineTo(yCord + 5, tblTop + tblHeight);
-            }
-            ctx.closePath();
-            ctx.stroke();
-
-            ctx.font = '10px cartogothic_stdregular,open_sans,helvetica,arial,sans-serif';
-            var txtbtmXCord = tblTop + tblHeight / 2 + 3;
-            ctx.fillText(keys.title, 4, txtbtmXCord);
-
-            for (var i = 0; i < len; i++) {
-                var value = data.items[i].get(keys.key);
-                var textHalfWdth = ctx.measureText &&
-                    ctx.measureText(value).width / 2 ||
-                    0;                    
-                var yCord = config.padLeft +
-                    dataCellWidth * i +
-                    dataCellWidth / 2 -
-                    textHalfWdth;
-
-                ctx.fillText(value, yCord + 5, txtbtmXCord);
-            }
-        };
 
         getPicBtn = Ext.create('Ext.Button', {
             text: 'Hämta Bild',
-            handler: function() {
+            handler: function () {
                 var div = document.getElementById('tmp');
+
                 var chart = widget._chart;
-                var data = chart.getStore().getData();
 
                 // Get the text Items
-                var indicatorText = 'Indicator: ' +
+                // todo get the full name here..
+                var indicatorText = 'Indikator: ' +
                     _m.mapTitleCodeToName(Repository.Local.current.indicator);
+                var indicatorSubText = '                '+ _m.mapIndicatorCodeToName(Repository.Local.current.indicator);
                 var timePeriod = 'Tidsperiod: ' +
-                    _m.mapPeriodCodeToName(Repository.Local.current.period) +
-                    ' (' +
-                    Repository.Local.current.yearOfPeriod +
-                    ')';
-                var gender = 'Kön: ' +
-                    _m.mapGenderCodeToName(Repository.Local.current.gender);
+                    _m.mapPeriodCodeToName(Repository.Local.current.period) + ' (' + Repository.Local.current.yearOfPeriod + ')';
+                var gender = 'Kön: ' + _m.mapGenderCodeToName(Repository.Local.current.gender);
 
                 var dataUrl = chart.generatePicture({
                     padding: 10,
-                    fonts: {
-                        footer: {
-                            size: '9px'
-                        }
-                    },
                     header: {
-                        height: 22 * 3,
-                        items: [indicatorText, timePeriod, gender]
+                        height: 22 * 4,
+                        items: [indicatorText,indicatorSubText, timePeriod, gender]
                     },
-                    footer: {
-                        height: 40,
-                        renderer: function(ctx, dimensions) {
-                            makeTable(ctx, dimensions,data);
-                        }
+                    table: {
+                        height: 30,
+                        font: {
+                            size: '9px'
+                        },
+                        keys: [{
+                            title: 'Observationer',
+                            key: 'size'
+                        }]
                     }
                 });
-                var imgTag = document.createElement('img');
-                
-                imgTag.src = dataUrl;
                 var a = document.createElement('a');
                 a.setAttribute('href', dataUrl);
                 a.setAttribute('download', 'test.png');
@@ -415,6 +345,10 @@ Repository.Local.Methods.initialize({
                 document.body.appendChild(a);
                 // a.click();
                 document.body.removeChild(a);
+
+
+                var imgTag = document.createElement('img');
+                imgTag.src = dataUrl;
                 div.appendChild(imgTag);
             }
         });
@@ -431,19 +365,18 @@ Repository.Local.Methods.initialize({
                 cls: 'WidgetFormItem',
                 editable: false
             },
-            items: [
-                {
+            items: [{
                     xtype: 'combobox',
                     checkChangeEvents: (
-                        Ext.isIE10p
-                            ? ['change', 'propertychange', 'keyup']
-                            : [
-                                  'change',
-                                  'input',
-                                  'textInput',
-                                  'keyup',
-                                  'dragdrop'
-                              ]
+                        Ext.isIE10p ?
+                        ['change', 'propertychange', 'keyup'] :
+                        [
+                            'change',
+                            'input',
+                            'textInput',
+                            'keyup',
+                            'dragdrop'
+                        ]
                     ),
                     width: '100%',
                     flex: 1,
@@ -455,16 +388,16 @@ Repository.Local.Methods.initialize({
                     displayField: 'valueName',
                     valueField: 'valueCode',
                     listConfig: {
-                        titleCodeToName: function(value) {
+                        titleCodeToName: function (value) {
                             return _m.mapTitleCodeToName(value);
                         },
-                        getInnerTpl: function() {
+                        getInnerTpl: function () {
                             return '<i>{title}</i><br/>{valueName}';
                         }
                     },
                     value: Repository.Local.current.indicator,
                     listeners: {
-                        select: function(aCombo, aSelection) {
+                        select: function (aCombo, aSelection) {
                             Repository.Local.current.indicator = aSelection.get(
                                 'valueCode'
                             );
@@ -483,19 +416,18 @@ Repository.Local.Methods.initialize({
                         type: 'hbox'
                     },
                     width: '100%',
-                    items: [
-                        {
+                    items: [{
                             xtype: 'combobox',
                             checkChangeEvents: (
-                                Ext.isIE10p
-                                    ? ['change', 'propertychange', 'keyup']
-                                    : [
-                                          'change',
-                                          'input',
-                                          'textInput',
-                                          'keyup',
-                                          'dragdrop'
-                                      ]
+                                Ext.isIE10p ?
+                                ['change', 'propertychange', 'keyup'] :
+                                [
+                                    'change',
+                                    'input',
+                                    'textInput',
+                                    'keyup',
+                                    'dragdrop'
+                                ]
                             ),
                             flex: 1,
                             padding: '0 5px 0 0',
@@ -504,7 +436,7 @@ Repository.Local.Methods.initialize({
                                 fields: ['valueCode', 'valueName'],
                                 data: _m.getPeriodCodeNamePairs(),
                                 listeners: {
-                                    datachanged: function() {
+                                    datachanged: function () {
                                         widget.sizeRefresh(
                                             this,
                                             Repository.Local.SORTTYPE.Period
@@ -518,7 +450,7 @@ Repository.Local.Methods.initialize({
                             listConfig: sampleSizeConfiguration,
                             value: Repository.Local.current.period,
                             listeners: {
-                                select: function(aCombo, aSelection) {
+                                select: function (aCombo, aSelection) {
                                     Repository.Local.current.period = aSelection.get(
                                         'valueCode'
                                     );
@@ -529,15 +461,15 @@ Repository.Local.Methods.initialize({
                         {
                             xtype: 'combobox',
                             checkChangeEvents: (
-                                Ext.isIE10p
-                                    ? ['change', 'propertychange', 'keyup']
-                                    : [
-                                          'change',
-                                          'input',
-                                          'textInput',
-                                          'keyup',
-                                          'dragdrop'
-                                      ]
+                                Ext.isIE10p ?
+                                ['change', 'propertychange', 'keyup'] :
+                                [
+                                    'change',
+                                    'input',
+                                    'textInput',
+                                    'keyup',
+                                    'dragdrop'
+                                ]
                             ),
                             width: 110,
                             padding: '0 5px 0 0',
@@ -548,7 +480,7 @@ Repository.Local.Methods.initialize({
                                 fields: ['valueCode', 'valueName'],
                                 data: _m.getPossibleYears(),
                                 listeners: {
-                                    datachanged: function() {
+                                    datachanged: function () {
                                         widget.sizeRefresh(
                                             this,
                                             Repository.Local.SORTTYPE.Year
@@ -562,7 +494,7 @@ Repository.Local.Methods.initialize({
                             listConfig: sampleSizeConfiguration,
                             value: Repository.Local.current.yearOfPeriod,
                             listeners: {
-                                select: function(aCombo, aSelection) {
+                                select: function (aCombo, aSelection) {
                                     Repository.Local.current.yearOfPeriod = aSelection.get(
                                         'valueCode'
                                     );
@@ -573,15 +505,15 @@ Repository.Local.Methods.initialize({
                         {
                             xtype: 'combobox',
                             checkChangeEvents: (
-                                Ext.isIE10p
-                                    ? ['change', 'propertychange', 'keyup']
-                                    : [
-                                          'change',
-                                          'input',
-                                          'textInput',
-                                          'keyup',
-                                          'dragdrop'
-                                      ]
+                                Ext.isIE10p ?
+                                ['change', 'propertychange', 'keyup'] :
+                                [
+                                    'change',
+                                    'input',
+                                    'textInput',
+                                    'keyup',
+                                    'dragdrop'
+                                ]
                             ),
                             width: 170,
                             emptyText: 'Välj kön ...',
@@ -590,7 +522,7 @@ Repository.Local.Methods.initialize({
                                 fields: ['valueCode', 'valueName'],
                                 data: _m.domainForStore(_m.mapGenderCodeToName),
                                 listeners: {
-                                    datachanged: function() {
+                                    datachanged: function () {
                                         widget.sizeRefresh(
                                             this,
                                             Repository.Local.SORTTYPE.Gender
@@ -604,7 +536,7 @@ Repository.Local.Methods.initialize({
                             listConfig: sampleSizeConfiguration,
                             value: Repository.Local.current.gender,
                             listeners: {
-                                select: function(aCombo, aSelection) {
+                                select: function (aCombo, aSelection) {
                                     Repository.Local.current.gender = aSelection.get(
                                         'valueCode'
                                     );
