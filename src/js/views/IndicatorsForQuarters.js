@@ -300,12 +300,12 @@ var downloadPicBtn = Ext.create('Ext.Button', {
                 var timePeriod = 'Tidsperiod: ' +
                     _m.mapPeriodCodeToName(Repository.Local.current.period) + ' (' + Repository.Local.current.yearOfPeriod + ')';
                 var gender = 'Kön: ' + _m.mapGenderCodeToName(Repository.Local.current.gender);
-
+                var hospital = 'Sjukhus: ' + _m.mapHospitalCodeToName(Repository.Local.current.hospital);
                 var dataUrl = chart.generatePicture({
                     padding: 10,
                     header: {
-                        height: 22 * 4,
-                        items: [indicatorText,indicatorSubText, timePeriod, gender]
+                        height: 22 * 5,
+                        items: [indicatorText,indicatorSubText, timePeriod, gender, hospital]
                     },
                     table: {
                         height: 30,

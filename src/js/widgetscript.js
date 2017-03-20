@@ -658,6 +658,16 @@ window.Stratum.SID = {
             };
         };
     },
+    heatMapToPictures: function(data, config) {
+        debugger;
+        // analys data in,
+
+        // split
+
+        // run loop
+
+        // return array of dataUri's
+    },
     navigateToPage: function(pageId) {
         if (typeof location === 'undefined' || !location) {
             return;
@@ -666,7 +676,7 @@ window.Stratum.SID = {
     },
     initializeClasses: function() {
         var EXPORT_CHART_NAME = 'RC.ui.ExportChart';
-        // this class is a rogh implmentation and should be improved upon.
+        // this class is a rough implmentation and should be improved upon.
         !Ext.ClassManager.isCreated(EXPORT_CHART_NAME) &&
             Ext.define(EXPORT_CHART_NAME, function() {
                 function getChartSideGap(chart, side) {
@@ -720,19 +730,18 @@ window.Stratum.SID = {
                     var dataCellWidth = (config.width -
                         config.padLeft -
                         config.padRight -
-                        config.padding *2) /
+                        config.padding * 2) /
                         len;
 
                     var width = dataCellWidth * len +
                         config.padLeft +
                         config.padding;
-                    
-                    var leftEdge = Math.floor(config.padding /2);
+
+                    var leftEdge = Math.floor(config.padding / 2);
                     // debugger;
                     var tblTop = config.height;
                     var tblHeight = 22;
                     for (var k = 0; k < keys.length; k++) {
-                        
                         ctx.beginPath();
                         // move to left top corner
                         ctx.moveTo(leftEdge, tblTop);
@@ -758,8 +767,9 @@ window.Stratum.SID = {
                         ctx.fillText(keys[k].title, 4, txtbtmXCord);
 
                         for (var i = 0; i < len; i++) {
-
-                            var value = keys[k].key ? data.items[i].get(keys[k].key): '';
+                            var value = keys[k].key
+                                ? data.items[i].get(keys[k].key)
+                                : '';
                             var textHalfWdth = ctx.measureText &&
                                 ctx.measureText(value).width / 2 ||
                                 0;
@@ -768,7 +778,11 @@ window.Stratum.SID = {
                                 dataCellWidth / 2 -
                                 textHalfWdth;
 
-                            ctx.fillText(value, yCord + config.padding, txtbtmXCord);
+                            ctx.fillText(
+                                value,
+                                yCord + config.padding,
+                                txtbtmXCord
+                            );
                         }
                         tblTop = tblTop + tblHeight;
                     }
@@ -778,7 +792,7 @@ window.Stratum.SID = {
                     var section = config[type];
                     ctx.font = compositeFont(section.font);
                     ctx.fillStyle = config.foreColor || 'black';
-                    // get the font size without the 'px|pt' and add 2 pixels for lineheight 
+                    // get the font size without the 'px|pt' and add 2 pixels for lineheight
                     var lineHeight = +section.font.size.match(/(\d+)/)[0] + 2;
                     if (
                         section.items &&
@@ -786,11 +800,25 @@ window.Stratum.SID = {
                         section.items.length
                     ) {
                         section.items.forEach(function(item, index) {
-                            ctx.fillText(
-                                item,
-                                config.padding,
-                                lineHeight * (index + 1) + config.padding
-                            );
+                            var currentLineHeight = lineHeight * (index + 1) + config.padding;
+                            if (typeof item === 'string') {
+                                ctx.fillStyle = config.foreColor || 'black';
+                                ctx.fillText(
+                                    item,
+                                    config.padding,
+                                    currentLineHeight
+                                );
+                            } else if (typeof item === 'object' && item.text) {
+                                ctx.fillStyle = config.foreColor || 'black';
+                                ctx.fillText(
+                                    item.text,
+                                    config.padding,
+                                    currentLineHeight
+                                );
+                                if(item.renderer && typeof item.renderer === 'function') {
+                                    item.renderer(ctx, {lineHeight: lineHeight, row: index});
+                                }
+                            }
                         });
                     }
                     if (typeof section.renderer === 'function') {
@@ -814,20 +842,28 @@ window.Stratum.SID = {
                             chartImage = chart.getImage('image'),
                             chartLeftWidth = getChartSideGap(chart, 'left'),
                             chartRighWidth = getChartSideGap(chart, 'right'),
-                            chartBottomHeight = getChartSideGap(chart, 'bottom');
-                            cnvs = document.createElement('canvas');
+                            chartBottomHeight = getChartSideGap(
+                                chart,
+                                'bottom'
+                            );
+                        cnvs = document.createElement('canvas');
                         config = Ext.merge({}, defaultConfig, config || {});
 
                         var pictureWidth = chartWidth + config.padding;
                         var pictureHeight = chartHeight +
                             config.header.height +
                             config.table.height +
-                            config.footer.height; // we shall calculate this based on the config.
+                            config.footer.height;
 
                         cnvs.width = pictureWidth;
                         cnvs.height = pictureHeight;
 
                         var ctx = cnvs.getContext('2d');
+
+                        // setTimeout(function() {
+
+                        // });
+
                         ctx.fillStyle = config.backkColor || 'white';
                         ctx.fillRect(0, 0, pictureWidth, pictureHeight);
 
@@ -851,9 +887,9 @@ window.Stratum.SID = {
                             },
                             this
                         );
+
                         return cnvs.toDataURL();
                     },
-
                     alias: 'widget.exportChart',
                     extend: 'Ext.chart.Chart',
                     constructor: function(config) {

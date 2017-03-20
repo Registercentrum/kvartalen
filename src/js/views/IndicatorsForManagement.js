@@ -308,8 +308,10 @@ Repository.Local.Methods.initialize({
         getPicBtn = Ext.create('Ext.Button', {
             text: 'Hämta Bild',
             handler: function () {
-                var div = document.getElementById('tmp');
-
+                
+                /**
+                 * @type {ExportChart}
+                 */
                 var chart = widget._chart;
 
                 // Get the text Items
@@ -343,13 +345,8 @@ Repository.Local.Methods.initialize({
                 a.setAttribute('download', 'test.png');
                 a.style.display = 'none';
                 document.body.appendChild(a);
-                // a.click();
+                a.click();
                 document.body.removeChild(a);
-
-
-                var imgTag = document.createElement('img');
-                imgTag.src = dataUrl;
-                div.appendChild(imgTag);
             }
         });
 

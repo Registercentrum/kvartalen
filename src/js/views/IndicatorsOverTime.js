@@ -418,7 +418,6 @@
                 text: 'Hämta Bild',
                 // hidden: Ext.isIE10p,
                 handler: function() {
-                    var div = document.getElementById('tmp');
 
                     var chart = widget._chart;
 
@@ -432,25 +431,70 @@
                         _m.mapIndicatorCodeToName(
                             Repository.Local.current.indicator
                         );
-                    var timePeriod = 'Tidsperiod: ' +
-                        _m.mapPeriodCodeToName(
-                            Repository.Local.current.period
-                        ) +
-                        ' (' +
-                        Repository.Local.current.yearOfPeriod +
-                        ')';
                     var gender = 'Kön: ' +
                         _m.mapGenderCodeToName(Repository.Local.current.gender);
+
+                    var administration = 'Enhet: ' +
+                        _m.mapAdministrationCodeToName(
+                            Repository.Local.current.administration
+                        );
+                    var vgr = 'VGR  ';
+
+                    var colors = Ext.Array.flatten(
+                        Ext.Array.map(
+                            Ext.Array.toArray(chart.getSeries()),
+                            function(item) {
+                                return Ext.Array.map(item.sprites, function(
+                                    sprite
+                                ) {
+                                    return {
+                                        field: sprite.getField(),
+                                        fillStyle: sprite.attr.fillStyle,
+                                        strokeStyle: sprite.attr.strokeStyle
+                                    };
+                                });
+                            }
+                        )
+                    );
 
                     var dataUrl = chart.generatePicture({
                         padding: 10,
                         header: {
-                            height: 22 * 4,
+                            height: 22 * 5,
                             items: [
-                                indicatorText,
-                                indicatorSubText,
-                                timePeriod,
-                                gender
+                                { text: indicatorText },
+                                { text: indicatorSubText },
+                                { text: gender },
+                                {
+                                    text: administration,
+                                    renderer: function(ctx, cfg) {
+                                        ctx.fillStyle = Ext.Array.filter(
+                                            colors,
+                                            function(colorCfg) {
+                                                return colorCfg.field === 'administration';
+                                            }
+                                        )[0].fillStyle;
+                                        var x = ctx.measureText(administration).width + 15;
+                                        var y = cfg.lineHeight * cfg.row + 13;
+                                        var wh = cfg.lineHeight;
+                                        ctx.fillRect(x, y, wh, wh);
+                                    }
+                                },
+                                {
+                                    text: vgr,
+                                    renderer: function(ctx, cfg) {
+                                        ctx.fillStyle = Ext.Array.filter(
+                                            colors,
+                                            function(colorCfg) {
+                                                return colorCfg.field === 'vgr';
+                                            }
+                                        )[0].fillStyle;
+                                        var x = ctx.measureText(vgr).width + 10;
+                                        var y = cfg.lineHeight * cfg.row + 13;
+                                        var wh = cfg.lineHeight;
+                                        ctx.fillRect(x, y, wh, wh);
+                                    }
+                                }
                             ]
                         },
                         table: {
@@ -460,8 +504,7 @@
                             },
                             keys: [
                                 {
-                                    title: 'Observationer',
-                                    
+                                    title: 'Observationer'
                                 },
                                 {
                                     title: 'Enhet',
@@ -481,10 +524,6 @@
                     document.body.appendChild(a);
                     a.click();
                     document.body.removeChild(a);
-
-                    var imgTag = document.createElement('img');
-                    imgTag.src = dataUrl;
-                    div.appendChild(imgTag);
                 }
             });
 
