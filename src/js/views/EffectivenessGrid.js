@@ -423,20 +423,20 @@ Repository.Local.Methods.initialize({
                             );
 
                         var dataUrls = _m.heatMapToPictures(store.data,{
-                            padding: 10                            
+                            padding: 5                            
                         });
 
-                        // var a = document.createElement('a');
-                        // a.setAttribute('href', dataUrl);
-                        // a.setAttribute('download', 'test.png');
-                        // a.style.display = 'none';
-                        // document.body.appendChild(a);
-                        // // a.click();
-                        // document.body.removeChild(a);
+                        var a = document.createElement('a');
+                        a.setAttribute('href', dataUrls);
+                        a.setAttribute('download', 'test.png');
+                        a.style.display = 'none';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
 
                         // var imgTag = document.createElement('img');
                         // imgTag.src = dataUrl;
-                        // div.appendChild(imgTag);
+                        // document.body.appendChild(imgTag);
                     }
                 })
             ]

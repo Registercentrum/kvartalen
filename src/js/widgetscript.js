@@ -658,15 +658,146 @@ window.Stratum.SID = {
             };
         };
     },
+    drawTableOnCanvas: function(ctx, items, renderer) {
+        if (!Array.isArray(items)) {
+            throw new Error('Expected an array');
+        }
+        var totalWidth = Ext.Array.sum(
+            Ext.Array.map(items, function(item) {
+                return item.width;
+            })
+        );
+        var maxHeight = Ext.Array.max(
+            Ext.Array.map(items, function(item) {
+                return item.height;
+            })
+        );
+        var top = Ext.Array.min(
+            Ext.Array.map(items, function(item) {
+                return item.x;
+            })
+        );
+        ctx.beginPath();
+        ctx.moveTo(items[0].y, top);
+        ctx.lineTo(totalWidth, top);
+        ctx.moveTo(totalWidth, top + maxHeight);
+        ctx.lineTo(items[0].y, top + maxHeight);
+        ctx.lineTo(items[0].y, top);
+        var accumulatedWidth = 0;
+
+        for (var i = 0; i < items.length; i++) {
+            var curr = items[i];
+            var yCord = Math.ceil(curr.x);
+            // accumulatedWidth += curr.width;
+            ctx.moveTo(yCord, top);
+            ctx.lineTo(yCord, top + maxHeight);
+        }
+        ctx.closePath();
+        ctx.stroke();
+        accumulatedWidth = 0;
+        for (var j = 0; j < items.length; j++) {
+            renderer(ctx, items[j]);
+        }
+    },
     heatMapToPictures: function(data, config) {
-        debugger;
+        var me = this;
+        var width = 1920, height = 1080;
+        var canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        var context = canvas.getContext('2d');
+
         // analys data in,
+        var rows = Ext.Array.pluck(data.items, 'data');
+        var len = rows.length;
+        var indicatorTitles = Ext.Array.map(rows, function(row) {
+            return {
+                title: me.mapTitleCodeToName(row.indicator),
+                subTitle: me.mapIndicatorCodeToName(row.indicator)
+            };
+        });
+        var management = Ext.Object.getKeys(
+            Repository.Local.Methods.mapManagementCodeToName() || {}
+        );
+
+        // make title row
+        // divide width into 33 / 66
+        var indColWidth = width * 0.33;
+        // 66 / management.length
+        var heatMapColDimension = width * 0.66 / management.length;
+        // method for drawing a table
+        // method for drawing text, with line splits.
+
+        var titleRow = [
+            {
+                x: config.padding,
+                y: config.padding,
+                width: indColWidth,
+                height: heatMapColDimension / 2,
+                data: 'Indikator'
+            }
+        ];
+
+        for (var m = 0; m < management.length; m++) {
+            var x = config.padding + indColWidth + heatMapColDimension * m;
+            titleRow.push({
+                y: config.padding,
+                x: x,
+                width: heatMapColDimension,
+                height: heatMapColDimension / 2,
+                data: me.mapManagementCodeToName(management[m])
+            });
+        }
+        // debugger;
+        me.drawTableOnCanvas(context, titleRow, function(ctx, item, position) {
+            // debugger;
+            ctx.font = ctx.font.replace(/(\d*)/, 16);
+            ctx.fillText(
+                item.data,
+                item.x + 5,
+                item.height / 2,
+                item.width - 10
+            );
+            // todo method for determining if we need a line break and drawing two lines..
+            // also clean up the &shy; into a -
+        });
+        var dataRows = [];
+        for (var r = 0; r < rows.length; r++) {
+            var rowdata = rows[r];
+            var titles = indicatorTitles[r];
+            var row = [
+                {
+                    x: config.padding,
+                    y: config.padding,
+                    width: indColWidth,
+                    height: heatMapColDimension,
+                    data: titles.title + ' ' + titles.subTitle
+                }
+            ];
+            for (var m = 0; m < management.length; m++) {
+                var x = config.padding + indColWidth + heatMapColDimension * m;
+                row.push({
+                    y: (
+                        config.padding +
+                            heatMapColDimension * r +
+                            heatMapColDimension
+                    ),
+                    x: x,
+                    width: heatMapColDimension,
+                    height: heatMapColDimension,
+                    data: rowdata['m' + management[m]]
+                });
+            }
+            dataRows.push(row);
+        }
+            debugger;
 
         // split
 
         // run loop
 
         // return array of dataUri's
+        return canvas.toDataURL();
     },
     navigateToPage: function(pageId) {
         if (typeof location === 'undefined' || !location) {
@@ -756,7 +887,7 @@ window.Stratum.SID = {
 
                         for (var i = 0; i < len + 1; i++) {
                             var yCord = config.padLeft + dataCellWidth * i;
-                            ctx.moveTo(yCord + 5, tblTop);
+                            ctx.moveTo(yCord + 5, tblTop); // 5 is a magic number.. :P
                             ctx.lineTo(yCord + 5, tblTop + tblHeight);
                         }
                         ctx.closePath();
@@ -800,7 +931,8 @@ window.Stratum.SID = {
                         section.items.length
                     ) {
                         section.items.forEach(function(item, index) {
-                            var currentLineHeight = lineHeight * (index + 1) + config.padding;
+                            var currentLineHeight = lineHeight * (index + 1) +
+                                config.padding;
                             if (typeof item === 'string') {
                                 ctx.fillStyle = config.foreColor || 'black';
                                 ctx.fillText(
@@ -815,8 +947,14 @@ window.Stratum.SID = {
                                     config.padding,
                                     currentLineHeight
                                 );
-                                if(item.renderer && typeof item.renderer === 'function') {
-                                    item.renderer(ctx, {lineHeight: lineHeight, row: index});
+                                if (
+                                    item.renderer &&
+                                    typeof item.renderer === 'function'
+                                ) {
+                                    item.renderer(ctx, {
+                                        lineHeight: lineHeight,
+                                        row: index
+                                    });
                                 }
                             }
                         });
