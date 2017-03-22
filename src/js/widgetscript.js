@@ -662,42 +662,62 @@ window.Stratum.SID = {
         if (!Array.isArray(items)) {
             throw new Error('Expected an array');
         }
-        var totalWidth = Ext.Array.sum(
+        var totalWidth = Math.ceil(Ext.Array.sum(
             Ext.Array.map(items, function(item) {
                 return item.width;
             })
-        );
-        var maxHeight = Ext.Array.max(
+        )+ (items.length-1) * 2);
+        var maxHeight = Math.ceil(Ext.Array.max(
             Ext.Array.map(items, function(item) {
                 return item.height;
             })
-        );
-        var top = Ext.Array.min(
+        ));
+        var top = Math.floor(Ext.Array.min(
             Ext.Array.map(items, function(item) {
-                return item.x;
+                return item.y;
             })
-        );
+        ));
         ctx.beginPath();
-        ctx.moveTo(items[0].y, top);
+        ctx.moveTo(items[0].x, top);
         ctx.lineTo(totalWidth, top);
-        ctx.moveTo(totalWidth, top + maxHeight);
-        ctx.lineTo(items[0].y, top + maxHeight);
-        ctx.lineTo(items[0].y, top);
-        var accumulatedWidth = 0;
+        ctx.lineTo(totalWidth, top + maxHeight);
+        ctx.lineTo(items[0].x, top + maxHeight);
+        ctx.lineTo(items[0].x, top);
 
         for (var i = 0; i < items.length; i++) {
             var curr = items[i];
-            var yCord = Math.ceil(curr.x);
-            // accumulatedWidth += curr.width;
-            ctx.moveTo(yCord, top);
-            ctx.lineTo(yCord, top + maxHeight);
+            var xCord = Math.ceil(curr.x);
+            ctx.moveTo(xCord, top);
+            ctx.lineTo(xCord, top + maxHeight);
         }
         ctx.closePath();
         ctx.stroke();
-        accumulatedWidth = 0;
         for (var j = 0; j < items.length; j++) {
             renderer(ctx, items[j]);
         }
+    },
+    drawTextFitted: function(ctx, item, text) {
+        if (typeof text !== 'string' && !Array.isArray(text)) {
+            throw new Error('cannot call drawTextFitted with this item');
+        }
+        if(typeof text === 'string') {
+            text = text.replace('&shy;', '-');
+            text = text.split(/\s|\-/);
+        }        
+        var rowsThatfit = item.height / text.length;
+        var textHeight = +ctx.font.match(/(\d+)/)[0] +2;
+        // ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+        Ext.Array.each(text, function(t, i) {
+            
+            ctx.fillText(
+                t,
+                item.x + 5,
+                item.y  + (textHeight * i) + textHeight +5,
+                item.width - 10
+            );
+        });
+        
     },
     heatMapToPictures: function(data, config) {
         var me = this;
@@ -706,28 +726,28 @@ window.Stratum.SID = {
         canvas.width = width;
         canvas.height = height;
         var context = canvas.getContext('2d');
-
         // analys data in,
-        var rows = Ext.Array.pluck(data.items, 'data');
+        var rows = data.items;
         var len = rows.length;
-        var indicatorTitles = Ext.Array.map(rows, function(row) {
+        var getIndicatorTitle = function(indicator) {
             return {
-                title: me.mapTitleCodeToName(row.indicator),
-                subTitle: me.mapIndicatorCodeToName(row.indicator)
+                title: me.mapTitleCodeToName(indicator),
+                subTitle: me.mapIndicatorCodeToName(indicator)
             };
+        };
+        var mapMngmntCode = me.mapManagementCodeToName;
+        var management = Ext.Array.sort(Ext.Object.getKeys(
+            mapMngmntCode() || {}
+        ), function(codeA, codeB) {
+            return mapMngmntCode(codeA).localeCompare(mapMngmntCode(codeB));
         });
-        var management = Ext.Object.getKeys(
-            Repository.Local.Methods.mapManagementCodeToName() || {}
-        );
 
         // make title row
         // divide width into 33 / 66
-        var indColWidth = width * 0.33;
+        var indColWidth = (width - (config.padding)) * 0.33;
         // 66 / management.length
-        var heatMapColDimension = width * 0.66 / management.length;
-        // method for drawing a table
-        // method for drawing text, with line splits.
-
+        var heatMapColDimension = (width - (config.padding)) * 0.66 / management.length;
+        // initilize the title row with the "Indikator" cell
         var titleRow = [
             {
                 x: config.padding,
@@ -738,6 +758,7 @@ window.Stratum.SID = {
             }
         ];
 
+        // add each management to the title row
         for (var m = 0; m < management.length; m++) {
             var x = config.padding + indColWidth + heatMapColDimension * m;
             titleRow.push({
@@ -748,53 +769,79 @@ window.Stratum.SID = {
                 data: me.mapManagementCodeToName(management[m])
             });
         }
-        // debugger;
-        me.drawTableOnCanvas(context, titleRow, function(ctx, item, position) {
-            // debugger;
+
+        me.drawTableOnCanvas(context, titleRow, function(ctx, item) {
             ctx.font = ctx.font.replace(/(\d*)/, 16);
-            ctx.fillText(
-                item.data,
-                item.x + 5,
-                item.height / 2,
-                item.width - 10
-            );
-            // todo method for determining if we need a line break and drawing two lines..
-            // also clean up the &shy; into a -
+            me.drawTextFitted(ctx, item, item.data);
         });
+
+        // get all the datarows.. this will be split later for many pcs..
         var dataRows = [];
+        var dataRowInitalY = config.padding + (heatMapColDimension / 2);
+
         for (var r = 0; r < rows.length; r++) {
             var rowdata = rows[r];
-            var titles = indicatorTitles[r];
+            var indicator = rowdata.get('indicator');
+            var nonRegistration = rowdata.get('hasNonRegistering');
+            var titles = getIndicatorTitle(indicator);
+            var rowY = dataRowInitalY + heatMapColDimension * r;
             var row = [
                 {
                     x: config.padding,
-                    y: config.padding,
+                    y: rowY,
                     width: indColWidth,
                     height: heatMapColDimension,
-                    data: titles.title + ' ' + titles.subTitle
+                    data: [titles.title, titles.subTitle]
                 }
             ];
             for (var m = 0; m < management.length; m++) {
                 var x = config.padding + indColWidth + heatMapColDimension * m;
                 row.push({
-                    y: (
-                        config.padding +
-                            heatMapColDimension * r +
-                            heatMapColDimension
-                    ),
+                    y: rowY,
                     x: x,
                     width: heatMapColDimension,
                     height: heatMapColDimension,
-                    data: rowdata['m' + management[m]]
+                    data: rowdata.get('m' + management[m])
                 });
             }
             dataRows.push(row);
         }
-            debugger;
+
+        // draw the data rows..        
+        for (var d = 0; d < dataRows.length; d++) {
+            var datarow = dataRows[d];
+            me.drawTableOnCanvas(context, datarow, function(ctx, item) {
+                if (!item.data) {
+                    ctx.fillStyle = config.colors.na;
+                    ctx.fillRect(
+                        item.x + 2,
+                        item.y + 2,
+                        item.width - 4,
+                        item.height - 4
+                    );
+                } else if (Array.isArray(item.data)) {
+                    ctx.fillStyle = '#000000';
+                    ctx.font = ctx.font.replace(/(\d*)/, 18);
+                    me.drawTextFitted(ctx, item, item.data);
+                } else if (item.data.Indicator) {
+                    var t = me.getIndicatorTargets(item.data.Indicator);
+                    var calcs = config.calcFunc(item.data, t);
+                    ctx.fillStyle = config.colors[calcs.tdCls];
+                    ctx.fillRect(
+                        item.x + 2,
+                        item.y + 2,
+                        item.width - 4,
+                        item.height - 4
+                    );
+                    ctx.fillStyle = '#000000';
+                    var n = 'n = ' + item.data.Size;
+                    var m = 'm = ' + Ext.util.Format.number(t.LimitAbove, '0.0%'); 
+                    me.drawTextFitted(ctx, item, [n,m]);
+                }
+            });
+        }
 
         // split
-
-        // run loop
 
         // return array of dataUri's
         return canvas.toDataURL();
