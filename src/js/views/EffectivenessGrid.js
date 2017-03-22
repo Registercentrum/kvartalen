@@ -97,48 +97,36 @@ Repository.Local.Methods.initialize({
                 return 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
         }
     },
-    paintIndicatorHeat: function(scope) {
-        return function(aValue, aMeta, aRecord, aCellY, aCellX, aStore, aView) {
-            var t = Repository.Local.Methods.getIndicatorTargets(
-                aRecord.get('indicator')
-            ),
-                administration = aMeta.column && aMeta.column.dataIndex,
-                nonRegistering = aRecord.get('hasNonRegistering'),
-                regEx = new RegExp('(^|\\s)' + administration + '(\\s|$)'),
-                widget = scope,
-                m,
-                a,
-                baseImg;
-
-            if (Ext.isEmpty(aValue) || aValue.Measure === null) {
+    getIndicatorHeatCalc: function(aValue, t, nonRegistering, regEx) {
+        var tdCls,m;
+        if (Ext.isEmpty(aValue) || aValue.Measure === null) {
                 if (nonRegistering && nonRegistering.match(regEx)) {
-                    aMeta.tdCls = 'HeatGridValueNotRegister';
+                    tdCls = 'HeatGridValueNotRegister';
                     m = '<i>(inget värde förväntat)</i>';
                 } else {
-                    aMeta.tdCls = 'HeatGridValueNull';
+                    tdCls = 'HeatGridValueNull';
                     m = '<i>(förväntat värde saknas)</i>';
                 }
-                a = '';
             } else {
                 if (t.LimitBelow < t.LimitAbove) {
                     // Not the case for reversed indicators.
                     if (aValue.Measure < t.LimitBelow) {
-                        aMeta.tdCls = 'HeatGridValueLL';
+                        tdCls = 'HeatGridValueLL';
                     } else {
                         if (aValue.Measure < t.LimitAbove) {
-                            aMeta.tdCls = 'HeatGridValueML';
+                            tdCls = 'HeatGridValueML';
                         } else {
-                            aMeta.tdCls = 'HeatGridValueUL';
+                            tdCls = 'HeatGridValueUL';
                         }
                     }
                 } else {
                     if (aValue.Measure <= t.LimitAbove) {
-                        aMeta.tdCls = 'HeatGridValueUL';
+                        tdCls = 'HeatGridValueUL';
                     } else {
                         if (aValue.Measure <= t.LimitBelow) {
-                            aMeta.tdCls = 'HeatGridValueML';
+                            tdCls = 'HeatGridValueML';
                         } else {
-                            aMeta.tdCls = 'HeatGridValueLL';
+                            tdCls = 'HeatGridValueLL';
                         }
                     }
                 }
@@ -152,6 +140,27 @@ Repository.Local.Methods.initialize({
                     Ext.util.Format.number(t.LimitAbove, '0.0%')
                 );
             }
+            return {
+                m:m,
+                tdCls: tdCls
+            };
+    },
+    paintIndicatorHeat: function(scope) {        
+        return function(aValue, aMeta, aRecord, aCellY, aCellX, aStore, aView) {
+            var t = Repository.Local.Methods.getIndicatorTargets(
+                aRecord.get('indicator')
+            ),
+                administration = aMeta.column && aMeta.column.dataIndex,
+                nonRegistering = aRecord.get('hasNonRegistering'),
+                regEx = new RegExp('(^|\\s)' + administration + '(\\s|$)'),
+                widget = scope,
+                m,
+                baseImg;
+            var calcs = widget.getIndicatorHeatCalc(aValue, t, nonRegistering, regEx);
+
+            m = calcs.m;
+            aMeta.tdCls = calcs.tdCls;
+
             aMeta.tdAttr = Ext.String.format('data-qtip="{0}"', m);
             aMeta.style = 'height: 100%; width: 100%; display: inline-block; min-height:58px; padding: 0 !important;';
             return aMeta.tdCls
@@ -413,17 +422,28 @@ Repository.Local.Methods.initialize({
                     text: 'Hämta Bild',
                     // hidden: Ext.isIE10p,
                     handler: function() {
-                        
                         var timePeriod = 'Tidsperiod: ' +
-                    _m.mapPeriodCodeToName(Repository.Local.current.period) + ' (' + Repository.Local.current.yearOfPeriod + ')';
+                            _m.mapPeriodCodeToName(
+                                Repository.Local.current.period
+                            ) +
+                            ' (' +
+                            Repository.Local.current.yearOfPeriod +
+                            ')';
 
                         var gender = 'Kön: ' +
                             _m.mapGenderCodeToName(
                                 Repository.Local.current.gender
                             );
 
-                        var dataUrls = _m.heatMapToPictures(store.data,{
-                            padding: 5                            
+                        var dataUrls = _m.heatMapToPictures(store.data, {
+                            padding: 20,
+                            colors: {
+                                HeatGridValueML: '#fee066',
+                                HeatGridValueLL: '#f1ae59',
+                                HeatGridValueUL: '#ccd273',
+                                na: '#ccc'
+                            },
+                            calcFunc: widget.getIndicatorHeatCalc
                         });
 
                         var a = document.createElement('a');
