@@ -662,6 +662,7 @@ window.Stratum.SID = {
         if (!Array.isArray(items)) {
             throw new Error('Expected an array');
         }
+        ctx.fillStyle = '#000000';
         var totalWidth = Math.ceil(
             Ext.Array.sum(
                 Ext.Array.map(items, function(item) {
@@ -831,7 +832,8 @@ window.Stratum.SID = {
             canvas.width = width;
             canvas.height = height;
             var context = canvas.getContext('2d');
-
+            context.fillStyle = '#ffffff';
+            context.fillRect(0, 0, width, height);
             me.drawTableOnCanvas(context, titleRow, function(ctx, item) {
                 ctx.font = ctx.font.replace(/(\d*)/, 16);
                 me.drawTextFitted(ctx, item, item.data);
@@ -881,7 +883,10 @@ window.Stratum.SID = {
             var footerX = width - config.padding - footerW;
             var footerY = height - config.margins.bottom + footer.size + 2;
             context.fillText(footer.text, footerX, footerY);
-
+            
+            if (canvas.msToBlob) {
+                return canvas.msToBlob();
+            }
             return canvas.toDataURL();
         }
 
@@ -895,7 +900,7 @@ window.Stratum.SID = {
         };
         var footer = {
             size: 14,
-            text: '* n = observartioner, m = måltal.'
+            text: '* n = observationer, m = måltal.'
         };
         var result = [];
         for (var p = 0; p < pages; p++) {
@@ -1115,19 +1120,22 @@ window.Stratum.SID = {
                         cnvs.height = pictureHeight;
 
                         var ctx = cnvs.getContext('2d');
-
+                        ctx.globalAlpha = 1;
                         // setTimeout(function() {
 
                         // });
 
-                        ctx.fillStyle = config.backkColor || 'white';
+                        ctx.fillStyle = config.backColor || 'white';
                         ctx.fillRect(0, 0, pictureWidth, pictureHeight);
 
-                        ctx.drawImage(
-                            chartImage.data,
-                            config.padding / 2,
-                            config.header.height
-                        );
+                        // debugger;
+                        var chartImageX = config.padding /2;
+                        var chartImageY = config.header.height;
+                        // chartImage.data.width = chartWidth;
+                        // chartImage.data.height = chartHeight;
+                        ctx.drawImage(chartImage.data, chartImageX, chartImageY, chartWidth, chartHeight);
+
+                        
 
                         drawSection(ctx, config, 'header');
                         drawSection(
@@ -1141,9 +1149,12 @@ window.Stratum.SID = {
                                 padRight: chartRighWidth,
                                 padding: config.padding / 2
                             },
-                            this
-                        );
-
+                            chart
+                        );  
+                        var returnVal;
+                        if (cnvs.msToBlob) {
+                            return cnvs.msToBlob();
+                        }
                         return cnvs.toDataURL();
                     },
                     alias: 'widget.exportChart',

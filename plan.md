@@ -19,3 +19,5 @@ n = observ
 m = mål
 
 sät asterix under rutnät, förklar siffra är andelsmått, n = observartioner, m = måltal.
+
+sätt knapp under

@@ -313,7 +313,8 @@ Repository.Local.Methods.initialize({
                  * @type {ExportChart}
                  */
                 var chart = widget._chart;
-
+                var today = new Date().toLocaleDateString();
+                var filename = 'Indikatorvärden_per_förvaltning-' + today + '.png';
                 // Get the text Items
                 // todo get the full name here..
                 var indicatorText = 'Indikator: ' +
@@ -340,13 +341,17 @@ Repository.Local.Methods.initialize({
                         }]
                     }
                 });
+
+                if (window.navigator.msSaveBlob) {
+                    window.navigator.msSaveBlob(dataUrl, filename);
+                 } else {
                 var a = document.createElement('a');
                 a.setAttribute('href', dataUrl);
-                a.setAttribute('download', 'test.png');
+                a.setAttribute('download', filename);
                 a.style.display = 'none';
                 document.body.appendChild(a);
                 a.click();
-                document.body.removeChild(a);
+                document.body.removeChild(a);}
             }
         });
 

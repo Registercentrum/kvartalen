@@ -298,6 +298,66 @@ Repository.Local.Methods.initialize({
                 fields: widget.getEffectivenessFields()
             });
 
+        store = Ext.create('Ext.data.Store', {
+            storeId: 'EffectivenessStore',
+            model: 'EffectivenessModel',
+            data: widget.getEffectivenessValues(),
+            listeners: {
+                datachanged: function(
+                    store,
+                    records,
+                    successful,
+                    operation,
+                    eOpts
+                ) {
+                    store.each(widget.getIsManagementRegistering);
+                }
+            },
+            sorters: [
+                {
+                    property: 'sequence',
+                    direction: 'ASC'
+                }
+            ]
+        });
+        widget._heatMap = Ext.create('Ext.grid.Panel', {
+            store: Ext.data.StoreManager.lookup('EffectivenessStore'),
+            columns: widget.getEffectivenessColumns(),
+            cls: 'HeatGrid',
+            emptyText: 'Ingen data finns för valda parametrar.',
+            width: '100%',
+            columnLines: true,
+            margin: '8px 0 0 0',
+            rowLines: true,
+            border: true,
+            enableColumnHide: false,
+            enableColumnMove: false,
+            enableColumnResize: false,
+            disableSelection: true,
+            // renderTo: 'EffectivenessGridContainer',
+            listeners: {
+                cellclick: function(aGrid, aTD, aCellX, aRecord) {
+                    Repository.Local.current.indicator = aRecord.get(
+                        'indicator'
+                    );
+                    if (aCellX === 0) {
+                        _m.navigateToPage(1275);
+                    } else {
+                        var m = aRecord.get(
+                            aGrid.getGridColumns()[aCellX].dataIndex
+                        );
+                        if (m && m.Measure !== null) {
+                            // Only show results if there are any.
+                            Repository.Local.current.management = m.Administration;
+                            _m.navigateToPage(1276);
+                        }
+                    }
+                },
+                afterrender: function(grid) {
+                    widget.initHeaderAffix(grid); //Make the column header follow scroll
+                }
+            }
+        });
         Ext.create('Ext.panel.Panel', {
             renderTo: 'EffectivenessGridContainer',
             width: '100%',
@@ -444,6 +504,7 @@ Repository.Local.Methods.initialize({
                         }
                     ]
                 },
+                widget._heatMap,
                 {
                     xtype: 'panel',
                     width: '100%',
@@ -456,7 +517,7 @@ Repository.Local.Methods.initialize({
                         {
                             xtype: 'button',
                             text: 'Hämta som bilder',
-                            flex: 1,
+                            // flex: 1,
                             // hidden: Ext.isIE10p,
                             handler: function() {
                                 var timePeriod = 'Tidsperiod: ' +
@@ -493,20 +554,25 @@ Repository.Local.Methods.initialize({
                                 dataUrls.forEach(function(dataUrl, i) {
                                     var a = document.createElement('a'),
                                         today = new Date().toLocaleDateString();
-                                    a.setAttribute('href', dataUrl);
                                     var pageNo = i + 1;
-                                    a.setAttribute(
-                                        'download',
-                                        'måluppfyllelse-' +
-                                            today +
-                                            '-del-' +
-                                            pageNo +
-                                            '.png'
-                                    );
-                                    a.style.display = 'none';
-                                    document.body.appendChild(a);
-                                    a.click();
-                                    document.body.removeChild(a);
+                                    var filename = 'måluppfyllelse-' +
+                                        today +
+                                        '-del-' +
+                                        pageNo +
+                                        '.png';
+                                    if (window.navigator.msSaveBlob) {
+                                        window.navigator.msSaveBlob(
+                                            dataUrl,
+                                            filename
+                                        );
+                                    } else {
+                                        a.setAttribute('href', dataUrl);
+                                        a.setAttribute('download', filename);
+                                        a.style.display = 'none';
+                                        document.body.appendChild(a);
+                                        a.click();
+                                        document.body.removeChild(a);
+                                    }
                                 });
                             }
                         }
@@ -514,66 +580,6 @@ Repository.Local.Methods.initialize({
                 }
             ]
         });
-        store = Ext.create('Ext.data.Store', {
-            storeId: 'EffectivenessStore',
-            model: 'EffectivenessModel',
-            data: widget.getEffectivenessValues(),
-            listeners: {
-                datachanged: function(
-                    store,
-                    records,
-                    successful,
-                    operation,
-                    eOpts
-                ) {
-                    store.each(widget.getIsManagementRegistering);
-                }
-            },
-            sorters: [
-                {
-                    property: 'sequence',
-                    direction: 'ASC'
-                }
-            ]
-        });
-        Ext.create('Ext.grid.Panel', {
-            store: Ext.data.StoreManager.lookup('EffectivenessStore'),
-            columns: widget.getEffectivenessColumns(),
-            cls: 'HeatGrid',
-            emptyText: 'Ingen data finns för valda parametrar.',
-            width: '100%',
-            columnLines: true,
-            rowLines: true,
-            border: true,
-            enableColumnHide: false,
-            enableColumnMove: false,
-            enableColumnResize: false,
-            disableSelection: true,
-            renderTo: 'EffectivenessGridContainer',
-            listeners: {
-                cellclick: function(aGrid, aTD, aCellX, aRecord) {
-                    Repository.Local.current.indicator = aRecord.get(
-                        'indicator'
-                    );
-                    if (aCellX === 0) {
-                        _m.navigateToPage(1275);
-                    } else {
-                        var m = aRecord.get(
-                            aGrid.getGridColumns()[aCellX].dataIndex
-                        );
-                        if (m && m.Measure !== null) {
-                            // Only show results if there are any.
-                            Repository.Local.current.management = m.Administration;
-                            _m.navigateToPage(1276);
-                        }
-                    }
-                },
-                afterrender: function(grid) {
-                    widget.initHeaderAffix(grid); //Make the column header follow scroll
-                }
-            }
-        });
-
         store.each(widget.getIsManagementRegistering);
     }
 });

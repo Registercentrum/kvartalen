@@ -284,7 +284,8 @@ Repository.Local.Methods.initialize({
             handler: function () {
 
                 var chart = widget._chart;
-
+                var today = new Date().toLocaleDateString();
+                var filename = 'Indikatorvärden_per_sjukhus-' + today + '.png';
                 // Get the text Items                
                 var indicatorText = 'Indikator: ' +
                     _m.mapTitleCodeToName(Repository.Local.current.indicator);
@@ -310,13 +311,18 @@ Repository.Local.Methods.initialize({
                         }]
                     }
                 });
-                var a = document.createElement('a');
-                a.setAttribute('href', dataUrl);
-                a.setAttribute('download', 'test.png');
-                a.style.display = 'none';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
+
+                if (window.navigator.msSaveBlob) {
+                    window.navigator.msSaveBlob(dataUrl, filename);
+                 } else {
+                    var a = document.createElement('a');
+                    a.setAttribute('href', dataUrl);
+                    a.setAttribute('download', filename);
+                    a.style.display = 'none';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                }
             }
         });
 

@@ -416,11 +416,12 @@
 
             var getPicBtn = Ext.create('Ext.Button', {
                 text: 'Hämta Bild',
+                margin: '8px 0 0 0',
                 // hidden: Ext.isIE10p,
                 handler: function() {
-
                     var chart = widget._chart;
-
+                    var today = new Date().toLocaleDateString();
+                    var filename = 'Indikatorvärden_över_tid-' + today + '.png';
                     // Get the text Items
                     // todo get the full name here..
                     var indicatorText = 'Indikator: ' +
@@ -471,10 +472,13 @@
                                         ctx.fillStyle = Ext.Array.filter(
                                             colors,
                                             function(colorCfg) {
-                                                return colorCfg.field === 'administration';
+                                                return colorCfg.field ===
+                                                    'administration';
                                             }
                                         )[0].fillStyle;
-                                        var x = ctx.measureText(administration).width + 15;
+                                        var x = ctx.measureText(
+                                            administration
+                                        ).width + 15;
                                         var y = cfg.lineHeight * cfg.row + 13;
                                         var wh = cfg.lineHeight;
                                         ctx.fillRect(x, y, wh, wh);
@@ -517,13 +521,17 @@
                             ]
                         }
                     });
-                    var a = document.createElement('a');
-                    a.setAttribute('href', dataUrl);
-                    a.setAttribute('download', 'test.png');
-                    a.style.display = 'none';
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
+                    if (window.navigator.msSaveBlob) {
+                        window.navigator.msSaveBlob(dataUrl, filename);
+                    } else {
+                        var a = document.createElement('a');
+                        a.setAttribute('href', dataUrl);
+                        a.setAttribute('download', filename);
+                        a.style.display = 'none';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                    }
                 }
             });
 
