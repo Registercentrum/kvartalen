@@ -992,7 +992,6 @@ window.Stratum.SID = {
                         config.padding;
 
                     var leftEdge = Math.floor(config.padding / 2);
-                    // debugger;
                     var tblTop = config.height;
                     var tblHeight = 22;
                     for (var k = 0; k < keys.length; k++) {
@@ -1128,13 +1127,15 @@ window.Stratum.SID = {
                         ctx.fillStyle = config.backColor || 'white';
                         ctx.fillRect(0, 0, pictureWidth, pictureHeight);
 
-                        // debugger;
+                        
+                        // be careful chaning this.. FireFox was a bit picky.
+                        // \/
                         var chartImageX = config.padding /2;
                         var chartImageY = config.header.height;
                         // chartImage.data.width = chartWidth;
                         // chartImage.data.height = chartHeight;
                         ctx.drawImage(chartImage.data, chartImageX, chartImageY, chartWidth, chartHeight);
-
+                        // /\
                         
 
                         drawSection(ctx, config, 'header');

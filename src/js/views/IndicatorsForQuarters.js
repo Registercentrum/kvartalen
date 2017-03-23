@@ -278,7 +278,7 @@ Repository.Local.Methods.initialize({
                         }
                         chart._lastInnerRect = chart.innerRect;
                     } catch (e) {
-                        console.error(e);
+                        // console.error(e);
                     }
                 }
             },
@@ -649,11 +649,11 @@ Repository.Local.Methods.initialize({
                         select: function(aCombo, aSelection) {
                             var value = aSelection.get('valueCode');
                             Repository.Local.current.hospital = value;
-                            console.log(
-                                'hospital: ',
-                                value,
-                                value.toString().length
-                            );
+                            // console.log(
+                            //     'hospital: ',
+                            //     value,
+                            //     value.toString().length
+                            // );
                             Repository.Local.current.administration = value;
                             Repository.Local.current.management = _m.toManagementCode(
                                 value
