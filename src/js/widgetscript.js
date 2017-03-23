@@ -662,21 +662,28 @@ window.Stratum.SID = {
         if (!Array.isArray(items)) {
             throw new Error('Expected an array');
         }
-        var totalWidth = Math.ceil(Ext.Array.sum(
-            Ext.Array.map(items, function(item) {
-                return item.width;
-            })
-        )+ (items.length-1) * 2);
-        var maxHeight = Math.ceil(Ext.Array.max(
-            Ext.Array.map(items, function(item) {
-                return item.height;
-            })
-        ));
-        var top = Math.floor(Ext.Array.min(
-            Ext.Array.map(items, function(item) {
-                return item.y;
-            })
-        ));
+        var totalWidth = Math.ceil(
+            Ext.Array.sum(
+                Ext.Array.map(items, function(item) {
+                    return item.width;
+                })
+            ) +
+                (items.length - 1) * 2
+        );
+        var maxHeight = Math.ceil(
+            Ext.Array.max(
+                Ext.Array.map(items, function(item) {
+                    return item.height;
+                })
+            )
+        );
+        var top = Math.floor(
+            Ext.Array.min(
+                Ext.Array.map(items, function(item) {
+                    return item.y;
+                })
+            )
+        );
         ctx.beginPath();
         ctx.moveTo(items[0].x, top);
         ctx.lineTo(totalWidth, top);
@@ -700,151 +707,215 @@ window.Stratum.SID = {
         if (typeof text !== 'string' && !Array.isArray(text)) {
             throw new Error('cannot call drawTextFitted with this item');
         }
-        if(typeof text === 'string') {
+        if (typeof text === 'string') {
             text = text.replace('&shy;', '-');
             text = text.split(/\s|\-/);
-        }        
+        }
         var rowsThatfit = item.height / text.length;
-        var textHeight = +ctx.font.match(/(\d+)/)[0] +2;
+        var textHeight = +ctx.font.match(/(\d+)/)[0] + 2;
         // ctx.textAlign = 'center';
         ctx.textBaseline = 'bottom';
         Ext.Array.each(text, function(t, i) {
-            
             ctx.fillText(
                 t,
                 item.x + 5,
-                item.y  + (textHeight * i) + textHeight +5,
+                item.y + textHeight * i + textHeight + 5,
                 item.width - 10
             );
         });
-        
     },
     heatMapToPictures: function(data, config) {
-        var me = this;
-        var width = 1920, height = 1080;
-        var canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        var context = canvas.getContext('2d');
-        // analys data in,
-        var rows = data.items;
-        var len = rows.length;
-        var getIndicatorTitle = function(indicator) {
+        var me = this,
+            width = 1920,
+            height = 1080,
+            // analys data in,
+            rows = data.items,
+            len = rows.length,
+            mapMngmntCode = me.mapManagementCodeToName;
+
+        function getIndicatorTitle(indicator) {
             return {
                 title: me.mapTitleCodeToName(indicator),
                 subTitle: me.mapIndicatorCodeToName(indicator)
             };
-        };
-        var mapMngmntCode = me.mapManagementCodeToName;
-        var management = Ext.Array.sort(Ext.Object.getKeys(
-            mapMngmntCode() || {}
-        ), function(codeA, codeB) {
-            return mapMngmntCode(codeA).localeCompare(mapMngmntCode(codeB));
-        });
+        }
 
-        // make title row
+        var management = Ext.Object
+            .getKeys(mapMngmntCode() || {})
+            .sort(function(codeA, codeB) {
+                return mapMngmntCode(codeA).localeCompare(mapMngmntCode(codeB));
+            });
+
         // divide width into 33 / 66
-        var indColWidth = (width - (config.padding)) * 0.33;
-        // 66 / management.length
-        var heatMapColDimension = (width - (config.padding)) * 0.66 / management.length;
+        var indColWidth = (width - config.padding) * 0.3,
+            // 66 / management.length
+            heatMapColDimension = (width - config.padding * 2) *
+                0.70 /
+                management.length,
+            pageTopYCord = config.margins.top,
+            maxPageHeight = height -
+                config.margins.top -
+                config.margins.bottom -
+                config.padding * 2;
+        // the full drawable space - the titlerow(hmcd / 2) / the height of each cell.
+        var dataRowsPPage = Math.floor(
+            (maxPageHeight - heatMapColDimension / 2) /
+                (heatMapColDimension + 2)
+        );
+        // make title row
         // initilize the title row with the "Indikator" cell
         var titleRow = [
             {
                 x: config.padding,
-                y: config.padding,
+                y: pageTopYCord,
                 width: indColWidth,
                 height: heatMapColDimension / 2,
                 data: 'Indikator'
             }
-        ];
-
-        // add each management to the title row
-        for (var m = 0; m < management.length; m++) {
-            var x = config.padding + indColWidth + heatMapColDimension * m;
-            titleRow.push({
-                y: config.padding,
-                x: x,
-                width: heatMapColDimension,
-                height: heatMapColDimension / 2,
-                data: me.mapManagementCodeToName(management[m])
-            });
-        }
-
-        me.drawTableOnCanvas(context, titleRow, function(ctx, item) {
-            ctx.font = ctx.font.replace(/(\d*)/, 16);
-            me.drawTextFitted(ctx, item, item.data);
-        });
-
-        // get all the datarows.. this will be split later for many pcs..
-        var dataRows = [];
-        var dataRowInitalY = config.padding + (heatMapColDimension / 2);
-
-        for (var r = 0; r < rows.length; r++) {
-            var rowdata = rows[r];
-            var indicator = rowdata.get('indicator');
-            var nonRegistration = rowdata.get('hasNonRegistering');
-            var titles = getIndicatorTitle(indicator);
-            var rowY = dataRowInitalY + heatMapColDimension * r;
-            var row = [
-                {
-                    x: config.padding,
-                    y: rowY,
-                    width: indColWidth,
-                    height: heatMapColDimension,
-                    data: [titles.title, titles.subTitle]
-                }
-            ];
-            for (var m = 0; m < management.length; m++) {
-                var x = config.padding + indColWidth + heatMapColDimension * m;
-                row.push({
-                    y: rowY,
+        ].concat(
+            management.map(function(m, i) {
+                var x = config.padding + indColWidth + heatMapColDimension * i;
+                return {
+                    y: pageTopYCord,
                     x: x,
                     width: heatMapColDimension,
-                    height: heatMapColDimension,
-                    data: rowdata.get('m' + management[m])
-                });
-            }
-            dataRows.push(row);
-        }
+                    height: heatMapColDimension / 2,
+                    data: me.mapManagementCodeToName(m)
+                };
+            })
+        );
 
-        // draw the data rows..        
-        for (var d = 0; d < dataRows.length; d++) {
-            var datarow = dataRows[d];
-            me.drawTableOnCanvas(context, datarow, function(ctx, item) {
-                if (!item.data) {
-                    ctx.fillStyle = config.colors.na;
-                    ctx.fillRect(
-                        item.x + 2,
-                        item.y + 2,
-                        item.width - 4,
-                        item.height - 4
-                    );
-                } else if (Array.isArray(item.data)) {
-                    ctx.fillStyle = '#000000';
-                    ctx.font = ctx.font.replace(/(\d*)/, 18);
-                    me.drawTextFitted(ctx, item, item.data);
-                } else if (item.data.Indicator) {
-                    var t = me.getIndicatorTargets(item.data.Indicator);
-                    var calcs = config.calcFunc(item.data, t);
-                    ctx.fillStyle = config.colors[calcs.tdCls];
-                    ctx.fillRect(
-                        item.x + 2,
-                        item.y + 2,
-                        item.width - 4,
-                        item.height - 4
-                    );
-                    ctx.fillStyle = '#000000';
-                    var n = 'n = ' + item.data.Size;
-                    var m = 'm = ' + Ext.util.Format.number(t.LimitAbove, '0.0%'); 
-                    me.drawTextFitted(ctx, item, [n,m]);
-                }
+        // get the datarows.. todo: clean up argument list..
+        function getDataRows(
+            start,
+            end,
+            dataRowInitalY,
+            config,
+            indColWidth,
+            heatMapColDimension,
+            management
+        ) {
+            var rowSelection = rows.slice(start, end);
+            return rowSelection.map(function(rowdata, r) {
+                var indicator = rowdata.get('indicator');
+                var nonRegistration = rowdata.get('hasNonRegistering');
+                var titles = getIndicatorTitle(indicator);
+                var rowY = dataRowInitalY + heatMapColDimension * r;
+                return [
+                    {
+                        x: config.padding,
+                        y: rowY,
+                        width: indColWidth,
+                        height: heatMapColDimension,
+                        data: [titles.title, titles.subTitle]
+                    }
+                ].concat(
+                    management.map(function(m, i) {
+                        var x = config.padding +
+                            indColWidth +
+                            heatMapColDimension * i;
+                        return {
+                            y: rowY,
+                            x: x,
+                            width: heatMapColDimension,
+                            height: heatMapColDimension,
+                            data: rowdata.get('m' + m)
+                        };
+                    })
+                );
             });
         }
 
-        // split
+        function printPage(titleRow, dataRows, header, footer) {
+            var canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            var context = canvas.getContext('2d');
+
+            me.drawTableOnCanvas(context, titleRow, function(ctx, item) {
+                ctx.font = ctx.font.replace(/(\d*)/, 16);
+                me.drawTextFitted(ctx, item, item.data);
+            });
+
+            // draw the data rows..
+            for (var d = 0; d < dataRows.length; d++) {
+                var datarow = dataRows[d];
+                me.drawTableOnCanvas(context, datarow, function(ctx, item) {
+                    if (!item.data) {
+                        ctx.fillStyle = config.colors.na;
+                        ctx.fillRect(
+                            item.x + 2,
+                            item.y + 2,
+                            item.width - 4,
+                            item.height - 4
+                        );
+                    } else if (Array.isArray(item.data)) {
+                        ctx.fillStyle = '#000000';
+                        ctx.font = ctx.font.replace(/(\d*)/, 18);
+                        me.drawTextFitted(ctx, item, item.data);
+                    } else if (item.data.Indicator) {
+                        var t = me.getIndicatorTargets(item.data.Indicator);
+                        var calcs = config.calcFunc(item.data, t);
+                        ctx.fillStyle = config.colors[calcs.tdCls];
+                        ctx.fillRect(
+                            item.x + 2,
+                            item.y + 2,
+                            item.width - 4,
+                            item.height - 4
+                        );
+                        ctx.fillStyle = '#000000';
+                        var n = 'n = ' + item.data.Size;
+                        var m = 'm = ' +
+                            Ext.util.Format.number(t.LimitAbove, '0.0%');
+                        me.drawTextFitted(ctx, item, [n, m]);
+                    }
+                });
+            }
+
+            // draw the header
+            me.drawTextFitted(context, header, header.data);
+
+            //draw the footer
+            context.font = context.font.replace(/(\d*)/, footer.size);
+            var footerW = context.measureText(footer.text).width;
+            var footerX = width - config.padding - footerW;
+            var footerY = height - config.margins.bottom + footer.size + 2;
+            context.fillText(footer.text, footerX, footerY);
+
+            return canvas.toDataURL();
+        }
+
+        var pages = Math.ceil(rows.length / dataRowsPPage);
+        var header = {
+            y: config.padding,
+            x: config.padding,
+            width: width,
+            height: config.margins.top,
+            data: config.header
+        };
+        var footer = {
+            size: 14,
+            text: '* n = observartioner, m = måltal.'
+        };
+        var result = [];
+        for (var p = 0; p < pages; p++) {
+            var start = p * dataRowsPPage;
+            var end = start + dataRowsPPage;
+            var dataRowInitalY = titleRow[0].y + titleRow[0].height;
+            var currentDataRows = getDataRows(
+                start,
+                end,
+                dataRowInitalY,
+                config,
+                indColWidth,
+                heatMapColDimension,
+                management
+            );
+            result.push(printPage(titleRow, currentDataRows, header, footer));
+        }
 
         // return array of dataUri's
-        return canvas.toDataURL();
+        return result;
     },
     navigateToPage: function(pageId) {
         if (typeof location === 'undefined' || !location) {

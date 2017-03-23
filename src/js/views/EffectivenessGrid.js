@@ -98,54 +98,54 @@ Repository.Local.Methods.initialize({
         }
     },
     getIndicatorHeatCalc: function(aValue, t, nonRegistering, regEx) {
-        var tdCls,m;
+        var tdCls, m;
         if (Ext.isEmpty(aValue) || aValue.Measure === null) {
-                if (nonRegistering && nonRegistering.match(regEx)) {
-                    tdCls = 'HeatGridValueNotRegister';
-                    m = '<i>(inget värde förväntat)</i>';
+            if (nonRegistering && nonRegistering.match(regEx)) {
+                tdCls = 'HeatGridValueNotRegister';
+                m = '<i>(inget värde förväntat)</i>';
+            } else {
+                tdCls = 'HeatGridValueNull';
+                m = '<i>(förväntat värde saknas)</i>';
+            }
+        } else {
+            if (t.LimitBelow < t.LimitAbove) {
+                // Not the case for reversed indicators.
+                if (aValue.Measure < t.LimitBelow) {
+                    tdCls = 'HeatGridValueLL';
                 } else {
-                    tdCls = 'HeatGridValueNull';
-                    m = '<i>(förväntat värde saknas)</i>';
+                    if (aValue.Measure < t.LimitAbove) {
+                        tdCls = 'HeatGridValueML';
+                    } else {
+                        tdCls = 'HeatGridValueUL';
+                    }
                 }
             } else {
-                if (t.LimitBelow < t.LimitAbove) {
-                    // Not the case for reversed indicators.
-                    if (aValue.Measure < t.LimitBelow) {
-                        tdCls = 'HeatGridValueLL';
-                    } else {
-                        if (aValue.Measure < t.LimitAbove) {
-                            tdCls = 'HeatGridValueML';
-                        } else {
-                            tdCls = 'HeatGridValueUL';
-                        }
-                    }
+                if (aValue.Measure <= t.LimitAbove) {
+                    tdCls = 'HeatGridValueUL';
                 } else {
-                    if (aValue.Measure <= t.LimitAbove) {
-                        tdCls = 'HeatGridValueUL';
+                    if (aValue.Measure <= t.LimitBelow) {
+                        tdCls = 'HeatGridValueML';
                     } else {
-                        if (aValue.Measure <= t.LimitBelow) {
-                            tdCls = 'HeatGridValueML';
-                        } else {
-                            tdCls = 'HeatGridValueLL';
-                        }
+                        tdCls = 'HeatGridValueLL';
                     }
                 }
-                m = Ext.String.format(
-                    '{0}<br/>{1} observationer.<br/>{2}. Mål {3}.',
-                    Repository.Local.Methods.mapManagementCodeToName(
-                        aValue.Administration
-                    ),
-                    aValue.Size,
-                    Ext.util.Format.number(aValue.Measure, '0.0%'),
-                    Ext.util.Format.number(t.LimitAbove, '0.0%')
-                );
             }
-            return {
-                m:m,
-                tdCls: tdCls
-            };
+            m = Ext.String.format(
+                '{0}<br/>{1} observationer.<br/>{2}. Mål {3}.',
+                Repository.Local.Methods.mapManagementCodeToName(
+                    aValue.Administration
+                ),
+                aValue.Size,
+                Ext.util.Format.number(aValue.Measure, '0.0%'),
+                Ext.util.Format.number(t.LimitAbove, '0.0%')
+            );
+        }
+        return {
+            m: m,
+            tdCls: tdCls
+        };
     },
-    paintIndicatorHeat: function(scope) {        
+    paintIndicatorHeat: function(scope) {
         return function(aValue, aMeta, aRecord, aCellY, aCellX, aStore, aView) {
             var t = Repository.Local.Methods.getIndicatorTargets(
                 aRecord.get('indicator')
@@ -156,7 +156,12 @@ Repository.Local.Methods.initialize({
                 widget = scope,
                 m,
                 baseImg;
-            var calcs = widget.getIndicatorHeatCalc(aValue, t, nonRegistering, regEx);
+            var calcs = widget.getIndicatorHeatCalc(
+                aValue,
+                t,
+                nonRegistering,
+                regEx
+            );
 
             m = calcs.m;
             aMeta.tdCls = calcs.tdCls;
@@ -437,6 +442,11 @@ Repository.Local.Methods.initialize({
 
                         var dataUrls = _m.heatMapToPictures(store.data, {
                             padding: 20,
+                            margins: {
+                                top: 80,
+                                bottom: 40
+                            },
+                            header: [timePeriod, gender],
                             colors: {
                                 HeatGridValueML: '#fee066',
                                 HeatGridValueLL: '#f1ae59',
@@ -445,14 +455,20 @@ Repository.Local.Methods.initialize({
                             },
                             calcFunc: widget.getIndicatorHeatCalc
                         });
-
-                        var a = document.createElement('a');
-                        a.setAttribute('href', dataUrls);
-                        a.setAttribute('download', 'test.png');
-                        a.style.display = 'none';
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
+                        dataUrls.forEach(function(dataUrl, i) {
+                            var a = document.createElement('a'),
+                                today = new Date().toLocaleDateString();
+                            a.setAttribute('href', dataUrl);
+                            var pageNo = i +1;
+                            a.setAttribute(
+                                'download',
+                                'måluppfyllelse-' + today + '-del-' + pageNo + '.png'
+                            );
+                            a.style.display = 'none';
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                        });
 
                         // var imgTag = document.createElement('img');
                         // imgTag.src = dataUrl;
