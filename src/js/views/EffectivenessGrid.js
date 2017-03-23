@@ -305,7 +305,7 @@ Repository.Local.Methods.initialize({
             bodyPadding: 0,
             margin: '0 0 16px 0',
             layout: {
-                type: 'hbox'
+                type: 'vbox'
             },
             defaults: {
                 cls: 'WidgetFormItem',
@@ -317,164 +317,201 @@ Repository.Local.Methods.initialize({
             },
             items: [
                 {
-                    xtype: 'combobox',
-                    flex: 1,
-                    padding: '0 5px 0 0',
-                    emptyText: 'Välj period ...',
-                    checkChangeEvents: (
-                        Ext.isIE10p
-                            ? ['change', 'propertychange', 'keyup']
-                            : [
-                                  'change',
-                                  'input',
-                                  'textInput',
-                                  'keyup',
-                                  'dragdrop'
-                              ]
-                    ),
-                    store: Ext.create('Ext.data.Store', {
-                        fields: ['valueCode', 'valueName'],
-                        data: _m.getPeriodCodeNamePairs()
-                    }),
-                    queryMode: 'local',
-                    displayField: 'valueName',
-                    valueField: 'valueCode',
-                    value: Repository.Local.current.period,
-                    listeners: {
-                        select: function(aCombo, aSelection) {
-                            Repository.Local.current.period = aSelection.get(
-                                'valueCode'
-                            );
-                            Ext.data.StoreManager
-                                .lookup('EffectivenessStore')
-                                .loadData(widget.getEffectivenessValues());
+                    xtype: 'panel',
+                    width: '100%',
+                    layout: { type: 'hbox' },
+                    defaults: {
+                        cls: 'WidgetFormItem',
+                        listConfig: {
+                            cls: 'WidgetListItem'
+                        },
+                        editable: false,
+                        labelAlign: 'left'
+                    },
+                    items: [
+                        {
+                            xtype: 'combobox',
+                            flex: 1,
+                            padding: '0 5px 0 0',
+                            emptyText: 'Välj period ...',
+                            checkChangeEvents: (
+                                Ext.isIE10p
+                                    ? ['change', 'propertychange', 'keyup']
+                                    : [
+                                          'change',
+                                          'input',
+                                          'textInput',
+                                          'keyup',
+                                          'dragdrop'
+                                      ]
+                            ),
+                            store: Ext.create('Ext.data.Store', {
+                                fields: ['valueCode', 'valueName'],
+                                data: _m.getPeriodCodeNamePairs()
+                            }),
+                            queryMode: 'local',
+                            displayField: 'valueName',
+                            valueField: 'valueCode',
+                            value: Repository.Local.current.period,
+                            listeners: {
+                                select: function(aCombo, aSelection) {
+                                    Repository.Local.current.period = aSelection.get(
+                                        'valueCode'
+                                    );
+                                    Ext.data.StoreManager
+                                        .lookup('EffectivenessStore')
+                                        .loadData(
+                                            widget.getEffectivenessValues()
+                                        );
+                                }
+                            }
+                        },
+                        {
+                            xtype: 'combobox',
+                            width: 100,
+                            padding: '0 5px 0 0',
+                            emptyText: 'Välj årtal ...',
+                            fieldLabel: 'för',
+                            labelWidth: 20,
+                            store: Ext.create('Ext.data.Store', {
+                                fields: ['valueCode', 'valueName'],
+                                data: _m.getPossibleYears()
+                            }),
+                            queryMode: 'local',
+                            displayField: 'valueName',
+                            valueField: 'valueCode',
+                            checkChangeEvents: (
+                                Ext.isIE10p
+                                    ? ['change', 'propertychange', 'keyup']
+                                    : [
+                                          'change',
+                                          'input',
+                                          'textInput',
+                                          'keyup',
+                                          'dragdrop'
+                                      ]
+                            ),
+                            value: Repository.Local.current.yearOfPeriod,
+                            listeners: {
+                                select: function(aCombo, aSelection) {
+                                    Repository.Local.current.yearOfPeriod = aSelection.get(
+                                        'valueCode'
+                                    );
+                                    Ext.data.StoreManager
+                                        .lookup('EffectivenessStore')
+                                        .loadData(
+                                            widget.getEffectivenessValues()
+                                        );
+                                }
+                            }
+                        },
+                        {
+                            xtype: 'combobox',
+                            width: 150,
+                            emptyText: 'Välj kön ...',
+                            store: Ext.create('Ext.data.Store', {
+                                //TODO: use domainForStore in local script to generate store.
+                                fields: ['valueCode', 'valueName'],
+                                data: _m.domainForStore(_m.mapGenderCodeToName)
+                            }),
+                            queryMode: 'local',
+                            displayField: 'valueName',
+                            valueField: 'valueCode',
+                            value: Repository.Local.current.gender,
+                            checkChangeEvents: (
+                                Ext.isIE10p
+                                    ? ['change', 'propertychange', 'keyup']
+                                    : [
+                                          'change',
+                                          'input',
+                                          'textInput',
+                                          'keyup',
+                                          'dragdrop'
+                                      ]
+                            ),
+                            listeners: {
+                                select: function(aCombo, aSelection) {
+                                    Repository.Local.current.gender = aSelection.get(
+                                        'valueCode'
+                                    );
+                                    Ext.data.StoreManager
+                                        .lookup('EffectivenessStore')
+                                        .loadData(
+                                            widget.getEffectivenessValues()
+                                        );
+                                }
+                            }
                         }
-                    }
+                    ]
                 },
                 {
-                    xtype: 'combobox',
-                    width: 100,
-                    padding: '0 5px 0 0',
-                    emptyText: 'Välj årtal ...',
-                    fieldLabel: 'för',
-                    labelWidth: 20,
-                    store: Ext.create('Ext.data.Store', {
-                        fields: ['valueCode', 'valueName'],
-                        data: _m.getPossibleYears()
-                    }),
-                    queryMode: 'local',
-                    displayField: 'valueName',
-                    valueField: 'valueCode',
-                    checkChangeEvents: (
-                        Ext.isIE10p
-                            ? ['change', 'propertychange', 'keyup']
-                            : [
-                                  'change',
-                                  'input',
-                                  'textInput',
-                                  'keyup',
-                                  'dragdrop'
-                              ]
-                    ),
-                    value: Repository.Local.current.yearOfPeriod,
-                    listeners: {
-                        select: function(aCombo, aSelection) {
-                            Repository.Local.current.yearOfPeriod = aSelection.get(
-                                'valueCode'
-                            );
-                            Ext.data.StoreManager
-                                .lookup('EffectivenessStore')
-                                .loadData(widget.getEffectivenessValues());
+                    xtype: 'panel',
+                    width: '100%',
+                    layout: {
+                        type: 'hbox',
+                        align: 'right'
+                    },
+                    margin: '5px 0 0 0',
+                    items: [
+                        {
+                            xtype: 'button',
+                            text: 'Hämta som bilder',
+                            flex: 1,
+                            // hidden: Ext.isIE10p,
+                            handler: function() {
+                                var timePeriod = 'Tidsperiod: ' +
+                                    _m.mapPeriodCodeToName(
+                                        Repository.Local.current.period
+                                    ) +
+                                    ' (' +
+                                    Repository.Local.current.yearOfPeriod +
+                                    ')';
+
+                                var gender = 'Kön: ' +
+                                    _m.mapGenderCodeToName(
+                                        Repository.Local.current.gender
+                                    );
+
+                                var dataUrls = _m.heatMapToPictures(
+                                    store.data,
+                                    {
+                                        padding: 20,
+                                        margins: {
+                                            top: 80,
+                                            bottom: 40
+                                        },
+                                        header: [timePeriod, gender],
+                                        colors: {
+                                            HeatGridValueML: '#fee066',
+                                            HeatGridValueLL: '#f1ae59',
+                                            HeatGridValueUL: '#ccd273',
+                                            na: '#ccc'
+                                        },
+                                        calcFunc: widget.getIndicatorHeatCalc
+                                    }
+                                );
+                                dataUrls.forEach(function(dataUrl, i) {
+                                    var a = document.createElement('a'),
+                                        today = new Date().toLocaleDateString();
+                                    a.setAttribute('href', dataUrl);
+                                    var pageNo = i + 1;
+                                    a.setAttribute(
+                                        'download',
+                                        'måluppfyllelse-' +
+                                            today +
+                                            '-del-' +
+                                            pageNo +
+                                            '.png'
+                                    );
+                                    a.style.display = 'none';
+                                    document.body.appendChild(a);
+                                    a.click();
+                                    document.body.removeChild(a);
+                                });
+                            }
                         }
-                    }
-                },
-                {
-                    xtype: 'combobox',
-                    width: 150,
-                    emptyText: 'Välj kön ...',
-                    store: Ext.create('Ext.data.Store', {
-                        //TODO: use domainForStore in local script to generate store.
-                        fields: ['valueCode', 'valueName'],
-                        data: _m.domainForStore(_m.mapGenderCodeToName)
-                    }),
-                    queryMode: 'local',
-                    displayField: 'valueName',
-                    valueField: 'valueCode',
-                    value: Repository.Local.current.gender,
-                    checkChangeEvents: (
-                        Ext.isIE10p
-                            ? ['change', 'propertychange', 'keyup']
-                            : [
-                                  'change',
-                                  'input',
-                                  'textInput',
-                                  'keyup',
-                                  'dragdrop'
-                              ]
-                    ),
-                    listeners: {
-                        select: function(aCombo, aSelection) {
-                            Repository.Local.current.gender = aSelection.get(
-                                'valueCode'
-                            );
-                            Ext.data.StoreManager
-                                .lookup('EffectivenessStore')
-                                .loadData(widget.getEffectivenessValues());
-                        }
-                    }
-                },
-                Ext.create('Ext.Button', {
-                    text: 'Hämta Bild',
-                    // hidden: Ext.isIE10p,
-                    handler: function() {
-                        var timePeriod = 'Tidsperiod: ' +
-                            _m.mapPeriodCodeToName(
-                                Repository.Local.current.period
-                            ) +
-                            ' (' +
-                            Repository.Local.current.yearOfPeriod +
-                            ')';
-
-                        var gender = 'Kön: ' +
-                            _m.mapGenderCodeToName(
-                                Repository.Local.current.gender
-                            );
-
-                        var dataUrls = _m.heatMapToPictures(store.data, {
-                            padding: 20,
-                            margins: {
-                                top: 80,
-                                bottom: 40
-                            },
-                            header: [timePeriod, gender],
-                            colors: {
-                                HeatGridValueML: '#fee066',
-                                HeatGridValueLL: '#f1ae59',
-                                HeatGridValueUL: '#ccd273',
-                                na: '#ccc'
-                            },
-                            calcFunc: widget.getIndicatorHeatCalc
-                        });
-                        dataUrls.forEach(function(dataUrl, i) {
-                            var a = document.createElement('a'),
-                                today = new Date().toLocaleDateString();
-                            a.setAttribute('href', dataUrl);
-                            var pageNo = i +1;
-                            a.setAttribute(
-                                'download',
-                                'måluppfyllelse-' + today + '-del-' + pageNo + '.png'
-                            );
-                            a.style.display = 'none';
-                            document.body.appendChild(a);
-                            a.click();
-                            document.body.removeChild(a);
-                        });
-
-                        // var imgTag = document.createElement('img');
-                        // imgTag.src = dataUrl;
-                        // document.body.appendChild(imgTag);
-                    }
-                })
+                    ]
+                }
             ]
         });
         store = Ext.create('Ext.data.Store', {
