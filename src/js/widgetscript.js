@@ -1095,7 +1095,7 @@ window.Stratum.SID = {
                 }
 
                 return {
-                    generatePicture: function(config) {
+                    generatePicture: function(config, _delay, _callback) {
                         var chart = this,
                             chartHeight = chart.getHeight(),
                             chartWidth = chart.getWidth(),
@@ -1105,58 +1105,65 @@ window.Stratum.SID = {
                             chartBottomHeight = getChartSideGap(
                                 chart,
                                 'bottom'
-                            );
-                        cnvs = document.createElement('canvas');
-                        config = Ext.merge({}, defaultConfig, config || {});
-
-                        var pictureWidth = chartWidth + config.padding;
-                        var pictureHeight = chartHeight +
-                            config.header.height +
-                            config.table.height +
-                            config.footer.height;
-
-                        cnvs.width = pictureWidth;
-                        cnvs.height = pictureHeight;
-
-                        var ctx = cnvs.getContext('2d');
-                        ctx.globalAlpha = 1;
-                        // setTimeout(function() {
-
-                        // });
-
-                        ctx.fillStyle = config.backColor || 'white';
-                        ctx.fillRect(0, 0, pictureWidth, pictureHeight);
-
-                        
-                        // be careful chaning this.. FireFox was a bit picky.
-                        // \/
-                        var chartImageX = config.padding /2;
-                        var chartImageY = config.header.height;
-                        // chartImage.data.width = chartWidth;
-                        // chartImage.data.height = chartHeight;
-                        ctx.drawImage(chartImage.data, chartImageX, chartImageY, chartWidth, chartHeight);
-                        // /\
-                        
-
-                        drawSection(ctx, config, 'header');
-                        drawSection(
-                            ctx,
-                            config,
-                            'table',
-                            {
-                                height: chartHeight + config.header.height,
-                                width: pictureWidth,
-                                padLeft: chartLeftWidth,
-                                padRight: chartRighWidth,
-                                padding: config.padding / 2
-                            },
-                            chart
-                        );  
-                        var returnVal;
-                        if (cnvs.msToBlob) {
-                            return cnvs.msToBlob();
+                            ),
+                            delay = _delay,
+                            callback = _callback;
+                        // Set default delay time if delay is missing.
+                        if(typeof _callback === 'undefined' && Ext.isFunction(_delay)){
+                            delay = 1000;
+                            callback = _delay;
                         }
-                        return cnvs.toDataURL();
+                        // Safety timeout to assure ExtJS getImage function has been completed before image is drawn
+                        setTimeout(function () {
+                            cnvs = document.createElement('canvas');
+                            config = Ext.merge({}, defaultConfig, config || {});
+
+                            var pictureWidth = chartWidth + config.padding;
+                            var pictureHeight = chartHeight +
+                                config.header.height +
+                                config.table.height +
+                                config.footer.height;
+
+                            cnvs.width = pictureWidth;
+                            cnvs.height = pictureHeight;
+
+                            var ctx = cnvs.getContext('2d');
+                            ctx.globalAlpha = 1;
+
+                            ctx.fillStyle = config.backColor || 'white';
+                            ctx.fillRect(0, 0, pictureWidth, pictureHeight);
+
+                            
+                            // be careful chaning this.. FireFox was a bit picky.
+                            // \/
+                            var chartImageX = config.padding /2;
+                            var chartImageY = config.header.height;
+                            // chartImage.data.width = chartWidth;
+                            // chartImage.data.height = chartHeight;
+                            ctx.drawImage(chartImage.data, chartImageX, chartImageY, chartWidth, chartHeight);
+                            // /\
+                            
+
+                            drawSection(ctx, config, 'header');
+                            drawSection(
+                                ctx,
+                                config,
+                                'table',
+                                {
+                                    height: chartHeight + config.header.height,
+                                    width: pictureWidth,
+                                    padLeft: chartLeftWidth,
+                                    padRight: chartRighWidth,
+                                    padding: config.padding / 2
+                                },
+                                chart
+                            );  
+                            var returnVal;
+                            if (cnvs.msToBlob) {
+                                return cnvs.msToBlob();
+                            }
+                            callback(cnvs.toDataURL());
+                        }, delay);
                     },
                     alias: 'widget.exportChart',
                     extend: 'Ext.chart.Chart',

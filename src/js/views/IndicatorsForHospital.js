@@ -294,7 +294,7 @@ Repository.Local.Methods.initialize({
                     _m.mapPeriodCodeToName(Repository.Local.current.period) + ' (' + Repository.Local.current.yearOfPeriod + ')';
                 var gender = 'Kön: ' + _m.mapGenderCodeToName(Repository.Local.current.gender);
 
-                var dataUrl = chart.generatePicture({
+                chart.generatePicture({
                     padding: 10,
                     header: {
                         height: 22 * 4,
@@ -310,19 +310,19 @@ Repository.Local.Methods.initialize({
                             key: 'size'
                         }]
                     }
+                }, function(dataUrl) {
+                    if (window.navigator.msSaveBlob) {
+                        window.navigator.msSaveBlob(dataUrl, filename);
+                    } else {
+                        var a = document.createElement('a');
+                        a.setAttribute('href', dataUrl);
+                        a.setAttribute('download', filename);
+                        a.style.display = 'none';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                    }
                 });
-
-                if (window.navigator.msSaveBlob) {
-                    window.navigator.msSaveBlob(dataUrl, filename);
-                 } else {
-                    var a = document.createElement('a');
-                    a.setAttribute('href', dataUrl);
-                    a.setAttribute('download', filename);
-                    a.style.display = 'none';
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                }
             }
         });
 

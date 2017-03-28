@@ -458,7 +458,7 @@
                         )
                     );
 
-                    var dataUrl = chart.generatePicture({
+                    chart.generatePicture({
                         padding: 10,
                         header: {
                             height: 22 * 5,
@@ -520,18 +520,19 @@
                                 }
                             ]
                         }
+                    }, function(dataUrl) {
+                        if (window.navigator.msSaveBlob) {
+                            window.navigator.msSaveBlob(dataUrl, filename);
+                        } else {
+                            var a = document.createElement('a');
+                            a.setAttribute('href', dataUrl);
+                            a.setAttribute('download', filename);
+                            a.style.display = 'none';
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                        }
                     });
-                    if (window.navigator.msSaveBlob) {
-                        window.navigator.msSaveBlob(dataUrl, filename);
-                    } else {
-                        var a = document.createElement('a');
-                        a.setAttribute('href', dataUrl);
-                        a.setAttribute('download', filename);
-                        a.style.display = 'none';
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                    }
                 }
             });
 
