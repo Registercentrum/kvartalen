@@ -1,8 +1,7 @@
-
-[X] per sjukhus & kvartal: få med sjukhus val.
+- [X] per sjukhus & kvartal: få med sjukhus val.
 
 övertid: 
-[x] lägg in legend som 2 rader med färgplutt.
+- [x] lägg in legend som 2 rader med färgplutt.
 
 enhet: **** []
 vgr []
