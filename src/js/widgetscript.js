@@ -139,7 +139,7 @@ window.Stratum.SID = {
 
         if (!me.cache || !me.cache[anIndicatorCode]) {
             tc = Ext.Array.filter(db.Targets, function(cr) {
-                return cr.Indicator === anIndicatorCode;
+                return cr.IndicatorTargets === anIndicatorCode;
             });
             tc.sort(function(a, b) {
                 return a.YearOfQuarter < b.YearOfQuarter ||
@@ -526,17 +526,17 @@ window.Stratum.SID = {
             {
                 height: (maxHeight - topLimit) * scale,
                 y: topLimit * scale,
-                fillStyle: limitAbove >= limitBelow ? '#CCD273' : '#F3BB73'
+                fillStyle: limitAbove >= limitBelow ? '#92ad8e' : '#c37884'
             },
             {
                 height: (topLimit - lowerLimit) * scale,
                 y: lowerLimit * scale,
-                fillStyle: '#FEE273'
+                fillStyle: '#f9ca81'
             },
             {
                 height: lowerLimit * scale,
                 y: 0,
-                fillStyle: limitAbove >= limitBelow ? '#F3BB73' : '#CCD273'
+                fillStyle: limitAbove >= limitBelow ? '#c37884' : '#92ad8e'
             }
         ];
         //Add rectangles for limits
