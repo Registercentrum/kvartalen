@@ -238,7 +238,8 @@
                     '<i>' +
                     Repository.Local.Methods.mapTitleCodeToName(aValue) +
                     '</i><br>' +
-                    Repository.Local.Methods.mapIndicatorCodeToName(aValue)
+                    Repository.Local.Methods.mapIndicatorCodeToName(aValue) +
+                    ' [' + aValue + ']'
                 );
             },
             getIsManagementRegistering: function(gridRecord) {
